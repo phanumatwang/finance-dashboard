@@ -1,0 +1,76 @@
+/* ✅ ใช้ตัวแปรสีจาก theme.css */
+:root {
+  /* Font และการแสดงผล */
+  font-family: "Work Sans", "Noto Sans", system-ui, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* ค่าเริ่มต้น (Light Mode) จะถูก override ใน theme.css */
+  color: var(--color-text);
+  background-color: var(--color-bg);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ✅ ลิงก์ */
+a {
+  font-weight: 500;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-nav-active);
+}
+
+/* ✅ body รีเซ็ตพื้นฐาน */
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* ✅ Heading มาตรฐาน */
+h1, h2, h3, h4, h5 {
+  font-weight: bold;
+  margin: 0.5rem 0;
+  color: var(--color-text);
+}
+
+/* ✅ ปุ่มมาตรฐาน */
+button {
+  border-radius: 8px;
+  border: none;
+  padding: 0.75rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: var(--color-primary);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.25s ease;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 2px solid var(--color-border);
+}
+
+/* ✅ Responsive: ใช้ Light/Dark Mode ถ้าระบบบังคับ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    background-color: #1f1f1f;
+    color: #f5f5f5;
+  }
+}
