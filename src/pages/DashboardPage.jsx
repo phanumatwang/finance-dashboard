@@ -13,7 +13,12 @@ export default function DashboardPage() {
   }, []);
 
   async function fetchDashboardData() {
-    const { data, error } = await supabase.from("transactions").select("*");
+    // ✅ ดึงเฉพาะรายการที่อนุมัติแล้ว
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("status", "approved"); // ✅ เฉพาะ status = approved
+
     if (error) {
       console.error("❌ Fetch error:", error.message);
       return;
@@ -24,7 +29,9 @@ export default function DashboardPage() {
     let monthlySummary = {};
 
     data.forEach((item) => {
-      const month = new Date(item.date).toLocaleString("th-TH", { month: "short" });
+      const month = new Date(item.date).toLocaleString("th-TH", {
+        month: "short",
+      });
 
       if (!monthlySummary[month]) {
         monthlySummary[month] = { income: 0, expense: 0 };
@@ -69,7 +76,9 @@ export default function DashboardPage() {
           <h3>{expense.toLocaleString()} บาท</h3>
         </div>
 
-        <div className={`dashboard-card ${balance >= 0 ? "positive" : "negative"}`}>
+        <div
+          className={`dashboard-card ${balance >= 0 ? "positive" : "negative"}`}
+        >
           <p>🏦 ยอดคงเหลือ</p>
           <h3>{balance.toLocaleString()} บาท</h3>
         </div>

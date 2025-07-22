@@ -3,13 +3,18 @@ import { useState } from "react";
 import { supabase } from "../supabaseClient";
 
 export default function AddPage() {
+  const getToday = () => {
+    const today = new Date();
+    return today.toISOString().split("T")[0]; // 👉 ตัดให้เหลือ YYYY-MM-DD
+  };
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
-  const [date, setDate] = useState("");
-  const [category, setCategory] = useState("รายรับ");
+  const [date, setDate] = useState(getToday());
+  const [category, setCategory] = useState("รายจ่าย");
   const [description, setDescription] = useState(""); // ✅ ใช้ description
   const [amount, setAmount] = useState("");
-
+  const userName = localStorage.getItem("username"); // ✅ ดึงชื่อคนที่ login อยู่
+  const role = localStorage.getItem("role");
   function handleFileChange(e) {
     if (e.target.files.length > 0) {
       setFile(e.target.files[0]);
@@ -52,6 +57,8 @@ export default function AddPage() {
         description,           // ✅ ใช้ description ที่ตรงกับ DB
         amount: parseFloat(amount),
         file_url: imageUrl,
+        created_by: userName, // ✅ บันทึกชื่อผู้บันทึก
+        status: role === "user" ? "pending" : "approved"  
       },
     ]);
 
@@ -62,7 +69,7 @@ export default function AddPage() {
 
       // ✅ Reset ฟอร์ม
       setDate("");
-      setCategory("รายรับ");
+      setCategory("รายจ่าย");
       setDescription("");  // ✅ Reset ตรงนี้
       setAmount("");
       setFile(null);

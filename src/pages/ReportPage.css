@@ -16,7 +16,7 @@
 
 /* การ์ดเต็มความกว้าง */
 .report-card {
-  width: 100%; /* ✅ ทำให้การ์ดเต็มจอ */
+  width: 100%;
   box-sizing: border-box;
   background: var(--color-secondary);
   border-radius: 8px;
@@ -24,6 +24,12 @@
   margin-bottom: 1rem;
   border-left: 5px solid var(--color-border);
   transition: 0.2s ease;
+  position: relative; /* ✅ สำคัญเพื่อให้ปุ่มลบยึดล่างขวา */
+}
+.card-delete-footer {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
 }
 
 /* รายรับ */
@@ -47,10 +53,32 @@
   color: var(--color-danger);
   font-weight: bold;
 }
+.card-actions {
+  display: flex;
+  justify-content: space-between; /* 👁️ ซ้าย | ✅ 🗑️ ขวา */
+  margin-top: 0.8rem;
+  gap: 0.5rem;
+}
+.card-header {
+  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.btn-approve {
+  background: var(--color-primary);
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: 0.2s ease;
+}
 
 /* ปุ่ม View */
 .btn-view {
-  margin-top: 0.5rem;
   padding: 0.4rem 0.8rem;
   background: var(--color-primary);
   color: white;
@@ -59,10 +87,23 @@
   cursor: pointer;
   font-size: 0.85rem;
   transition: 0.2s ease;
-  display: inline-block;
 }
 .btn-view:hover {
   opacity: 0.9;
+}
+
+/* ✅ ปุ่มลบอยู่ขวาล่างของ card */
+.btn-delete {
+  background: var(--color-danger);
+  color: #fff;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.btn-delete:hover {
+  background: #c9302c;
 }
 
 /* ✅ Popup Overlay */

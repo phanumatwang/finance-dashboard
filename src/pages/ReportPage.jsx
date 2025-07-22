@@ -1,23 +1,78 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
-import "./ReportPage.css"; // ✅ เพิ่มไฟล์ CSS
+import "./ReportPage.css";
 
 export default function ReportPage() {
   const [transactions, setTransactions] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
+  const userName = localStorage.getItem("username");
+  const role = localStorage.getItem("role"); // ✅ เอา role มาเช็คสิทธิ์
 
   useEffect(() => {
     fetchTransactions();
   }, []);
 
   async function fetchTransactions() {
-    const { data, error } = await supabase
+    let query = supabase
       .from("transactions")
       .select("*")
       .order("date", { ascending: false });
 
+    // ✅ ถ้าเป็น user (viewer) → เห็นเฉพาะของตัวเอง
+    if (role === "user") {
+      query = query.eq("created_by", userName);
+    }
+
+    const { data, error } = await query;
+
     if (error) console.error("❌ Fetch error:", error.message);
     else setTransactions(data);
+  }
+
+  async function handleDelete(id, fileUrl) {
+    if (!window.confirm("⚠️ คุณต้องการลบรายการนี้ใช่หรือไม่?")) return;
+
+    // ✅ ถ้ามีไฟล์แนบ → ลบใน storage ก่อน
+    if (fileUrl) {
+      const storagePath = extractStoragePath(fileUrl);
+      if (storagePath) {
+        const { error: storageError } = await supabase.storage
+          .from("uploads")
+          .remove([storagePath]);
+
+        if (storageError)
+          console.warn("⚠️ ลบไฟล์ไม่สำเร็จ:", storageError.message);
+      }
+    }
+
+    // ✅ ลบข้อมูลจาก table
+    const { error } = await supabase.from("transactions").delete().eq("id", id);
+
+    if (error) {
+      alert("❌ ลบไม่สำเร็จ: " + error.message);
+    } else {
+      alert("✅ ลบสำเร็จ!");
+      fetchTransactions(); // โหลดข้อมูลใหม่
+    }
+  }
+
+  // ✅ helper แยก path จาก URL
+  function extractStoragePath(fileUrl) {
+    const parts = fileUrl.split("/uploads/");
+    return parts[1] ? parts[1] : null;
+  }
+
+  async function approveRequest(id) {
+    const { error } = await supabase
+      .from("transactions")
+      .update({ status: "approved" })
+      .eq("id", id);
+
+    if (error) alert("❌ อนุมัติไม่สำเร็จ");
+    else {
+      alert("✅ อนุมัติสำเร็จ!");
+      fetchTransactions(); // refresh list
+    }
   }
 
   return (
@@ -35,11 +90,24 @@ export default function ReportPage() {
                 item.category === "รายรับ" ? "income" : "expense"
               }`}
             >
-              <p>
-                📅 <b>{item.date}</b>
-              </p>
-              <p>📂 หมวดหมู่: {item.category}</p>
-              <p>📝 รายละเอียด: {item.description}</p>
+              {/* ✅ ส่วนหัวการ์ด */}
+              <div className="card-header">
+                <p>
+                  📅 <b>{item.date}</b>
+                </p>
+                {(role === "admin" || role === "superadmin") &&
+                  item.status === "pending" && (
+                    <button
+                      className="btn-approve"
+                      onClick={() => approveRequest(item.id)}
+                    >
+                      ✅ อนุมัติ
+                    </button>
+                  )}
+              </div>
+
+              <p>📂 {item.category}</p>
+              <p>📝 {item.description}</p>
               <p
                 className={
                   item.category === "รายรับ"
@@ -50,6 +118,12 @@ export default function ReportPage() {
                 💵 {item.amount.toLocaleString()} บาท
               </p>
 
+              <p>
+                ✅ สถานะ:{" "}
+                {item.status === "approved" ? "✔️ อนุมัติแล้ว" : "⏳ รออนุมัติ"}
+              </p>
+
+              {/* ✅ ปุ่ม View รูปภาพ อยู่ด้านบน (ถ้ามีไฟล์) */}
               {item.file_url && (
                 <button
                   className="btn-view"
@@ -57,6 +131,18 @@ export default function ReportPage() {
                 >
                   👁️ View รูปภาพ
                 </button>
+              )}
+
+              {/* ✅ ปุ่มลบ ลอยล่างขวา เฉพาะ superadmin */}
+              {role === "superadmin" && (
+                <div className="card-delete-footer">
+                  <button
+                    className="btn-delete"
+                    onClick={() => handleDelete(item.id, item.file_url)}
+                  >
+                    🗑️ ลบ
+                  </button>
+                </div>
               )}
             </li>
           ))}
