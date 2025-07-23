@@ -1,0 +1,102 @@
+.ot-root {
+  padding: 1rem;
+  font-family: "Work Sans", sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+}
+
+.ot-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: var(--color-secondary);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.ot-form label {
+  font-weight: 500;
+}
+
+.ot-form input,
+.ot-form textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--color-text);
+  font-size: 1rem;
+}
+
+.ot-form button {
+  padding: 0.6rem;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s ease;
+}
+
+.ot-form button:hover {
+  opacity: 0.9;
+}
+
+.ot-history {
+  margin-top: 1rem;
+}
+
+.ot-history h3 {
+  margin-bottom: 0.5rem;
+}
+
+.ot-list {
+  list-style: none;
+  padding: 0;
+}
+
+.ot-list li {
+  background: var(--color-secondary);
+  margin-bottom: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border-left: 4px solid var(--color-primary);
+  word-wrap: break-word; /* ป้องกันข้อความยาวเกิน */
+}
+
+/* ✅ ปรับสำหรับมือถือ */
+@media (max-width: 768px) {
+  .ot-root {
+    padding: 0.75rem;
+  }
+
+  .ot-form {
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  .ot-form input,
+  .ot-form textarea {
+    font-size: 0.95rem;
+    padding: 0.45rem;
+  }
+
+  .ot-form button {
+    font-size: 0.95rem;
+    padding: 0.55rem;
+  }
+
+  .ot-history h3 {
+    font-size: 1rem;
+  }
+
+  .ot-list li {
+    font-size: 0.95rem;
+    padding: 0.65rem;
+  }
+}
+

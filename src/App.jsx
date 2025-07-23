@@ -8,6 +8,8 @@ import BottomNav from "./components/BottomNav";
 import AuthKey from "./pages/AuthKey";
 import TimeTrackingPage from "./pages/TimeTrackingPage";
 import PayrollPage from "./pages/PayrollPage";
+import OTApprovePage from "./pages/OTApprovePage";
+import OTRequestPage from "./pages/OTRequestPage";
 import "./theme.css";
 export default function App() {
   const userName = localStorage.getItem("username");
@@ -106,8 +108,13 @@ export default function App() {
           <Route path="*" element={<Navigate to="/add" />} />
         )}
         <Route path="/time-tracking" element={<TimeTrackingPage />} />
+         <Route
+          path="/ot-tracking"
+          element={
+            role === "user" ? <OTRequestPage /> : <OTApprovePage />
+          }
+        />
        
-        {/* ✅ ถ้าเป็น superadmin/admin → รายงานเวลาทำงาน */}
        
       </Routes>
 

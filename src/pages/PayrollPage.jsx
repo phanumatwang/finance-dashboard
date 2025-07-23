@@ -38,18 +38,36 @@ export default function PayrollPage() {
       .from("time_tracking")
       .select("*")
       .eq("created_by", user)
-      .eq("status", "approved") // ✅ เอาเฉพาะที่อนุมัติแล้ว
+      .eq("status", "approved")
       .order("date", { ascending: true });
 
-    if (error) {
-      console.error(error.message);
+    // ดึงข้อมูล OT
+    const { data: otData, error: otError } = await supabase
+      .from("overtime_requests")
+      .select("*")
+      .eq("requested_by", user)
+      .eq("status", "approved")
+      .order("date", { ascending: true });
+
+    if (error || otError) {
+      console.error(error?.message || otError?.message);
       return;
     }
 
-    setLogs(data);
+    // รวม log ทั้งสองตาราง
+    const allLogs = [
+      ...(data || []),
+      ...(otData || []).map((ot) => ({
+        ...ot,
+        description: ot.description || "OT",
+        wage_amount: ot.ot_amount || 0, // สมมติ ot_amount คือยอด OT
+      })),
+    ];
+    console.log("Combined logs:", allLogs);
+    setLogs(allLogs);
 
-    // ✅ รวมค่าแรงจริงจาก wage_amount
-    const sum = data.reduce((acc, item) => acc + (item.wage_amount || 0), 0);
+    // รวมยอดค่าแรง + OT
+    const sum = allLogs.reduce((acc, item) => acc + (item.wage_amount || 0), 0);
     setTotalWage(sum);
   }
 

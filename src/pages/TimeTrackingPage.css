@@ -1,27 +1,32 @@
 .time-root {
   padding: 1rem;
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--color-bg, #f5f5f5);
+  color: var(--color-text, #333);
   min-height: 100vh;
+  font-family: "Work Sans", sans-serif;
 }
 
+/* ✅ Form */
 .time-form {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
-  background: var(--color-secondary);
+  background: var(--color-secondary, #ffffff);
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .time-form input,
 .time-form textarea {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border, #ddd);
   border-radius: 6px;
   font-size: 1rem;
+  background: #fff;
+  color: #333;
 }
 
 .time-form textarea {
@@ -29,28 +34,95 @@
 }
 
 .btn-save {
-  background: var(--color-primary);
+  background: var(--color-primary, #4caf50);
   color: white;
   padding: 0.6rem;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  transition: 0.2s ease;
 }
 
 .btn-save:hover {
   opacity: 0.9;
+  transform: scale(1.02);
 }
 
+/* ✅ ปุ่มไม่อนุมัติ */
+.btn-reject {
+  background: var(--color-danger, #d9534f);
+  color: white;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  transition: 0.2s ease;
+}
+
+.btn-reject:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+/* ✅ รายการบันทึกงาน */
 .time-log-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
+/* ✅ การ์ดแต่ละรายการ */
 .time-card {
-  background: var(--color-secondary);
+  background: var(--color-secondary, #f9f9f9);
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 0.8rem;
-  border-left: 4px solid var(--color-primary);
+  border-left: 4px solid var(--color-primary, #4caf50);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  line-height: 1.4;
+}
+
+/* ✅ กล่องปุ่มใน Card */
+.card-actions {
+  display: flex;
+  gap: 0.5rem; /* ระยะห่างระหว่างปุ่ม */
+  margin-top: 0.8rem;
+}
+
+.card-actions button {
+  flex: 1; /* ✅ ทำให้ปุ่มกว้างเท่ากัน */
+  padding: 0.6rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+  font-size: 16px;
+  transition: 0.2s ease;
+}
+
+/* ✅ Hover effect เหมือนกันทุกปุ่ม */
+.card-actions button:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+/* ✅ ปรับให้สวยบนมือถือ */
+@media (max-width: 480px) {
+  .time-card {
+    font-size: 0.95rem;
+    padding: 0.8rem;
+  }
+
+  .card-actions {
+    flex-direction: column; /* ปุ่มเรียงแนวตั้งเมื่อจอเล็ก */
+  }
+
+  .card-actions button {
+    width: 100%;
+  }
 }

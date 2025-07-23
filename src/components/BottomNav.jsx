@@ -94,6 +94,13 @@ export default function BottomNav({ role }) {
           >
             ⏱️ บันทึกเวลาทำงาน
           </NavLink>
+           <NavLink
+            to="/ot-tracking"
+            className="submenu-item"
+            onClick={() => setOpenMenu(null)}
+          >
+            ⏱️ บันทึก OT
+          </NavLink>
            {(role === "superadmin" || role === "admin") && (
           <NavLink
             to="/time-tracking-report"

@@ -123,39 +123,41 @@ export default function TimeTrackingPage() {
   return (
     <div className="time-root">
       <h2>⏱️ บันทึกงานวันนี้</h2>
+      {role === "user" ? (
+        <form className="time-form" onSubmit={handleSubmit}>
+          <label>
+            รายละเอียดงาน
+            <textarea
+              placeholder="เขียนรายละเอียดงานที่ทำ..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={alreadyLoggedToday}
+            />
+          </label>
 
-      <form className="time-form" onSubmit={handleSubmit}>
-        <label>
-          รายละเอียดงาน
-          <textarea
-            placeholder="เขียนรายละเอียดงานที่ทำ..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+          <label>
+            แนบรูปถ่าย
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFileChange}
+              disabled={alreadyLoggedToday}
+            />
+          </label>
+          {fileName && <p className="file-preview">📎 เลือกไฟล์: {fileName}</p>}
+
+          <button
+            type="submit"
+            className="btn-save"
             disabled={alreadyLoggedToday}
-          />
-        </label>
-
-        <label>
-          แนบรูปถ่าย
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={handleFileChange}
-            disabled={alreadyLoggedToday}
-          />
-        </label>
-        {fileName && <p className="file-preview">📎 เลือกไฟล์: {fileName}</p>}
-
-        <button
-          type="submit"
-          className="btn-save"
-          disabled={alreadyLoggedToday}
-        >
-          {alreadyLoggedToday ? "✅ วันนี้บันทึกแล้ว" : "✅ บันทึกงาน"}
-        </button>
-      </form>
-
+          >
+            {alreadyLoggedToday ? "✅ วันนี้บันทึกแล้ว" : "✅ บันทึกงาน"}
+          </button>
+        </form>
+      ) : (
+        <p></p>
+      )}
       <h3>📜 ประวัติการบันทึก</h3>
       <ul className="time-log-list">
         {logs.map((log) => (
@@ -165,6 +167,7 @@ export default function TimeTrackingPage() {
             </p>
             <p>📝 {log.description}</p>
             <p>✍️ {log.created_by}</p>
+            <p> {log.status ? "✅ อนุมัติแล้ว" : "⏳ รออนุมัติ"}</p>
 
             {log.file_url && (
               <div style={{ marginTop: "0.5rem" }}>
@@ -189,13 +192,13 @@ export default function TimeTrackingPage() {
                     className="btn-approve"
                     onClick={() => updateStatus(log.id, "approved")}
                   >
-                    ✅ อนุมัติ
+                    อนุมัติ
                   </button>
                   <button
                     className="btn-reject"
                     onClick={() => updateStatus(log.id, "rejected")}
                   >
-                    ❌ ไม่อนุมัติ
+                    ไม่อนุมัติ
                   </button>
                 </div>
               )}
