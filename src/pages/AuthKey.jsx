@@ -14,10 +14,11 @@ export default function AuthKey() {
 
     const checkKey = (keys, role) => {
       for (const k of keys) {
-        const [name, key] = k.split(":");
+        const [name, key,wage] = k.split(":");
         if (keyInput === key) {
           localStorage.setItem("username", name);
           localStorage.setItem("role", role);
+          localStorage.setItem("wage", wage);
           window.location.reload();
           found = true;
           break;

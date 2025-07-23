@@ -1,0 +1,56 @@
+.time-root {
+  padding: 1rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+}
+
+.time-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  background: var(--color-secondary);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.time-form input,
+.time-form textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.time-form textarea {
+  min-height: 60px;
+}
+
+.btn-save {
+  background: var(--color-primary);
+  color: white;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-save:hover {
+  opacity: 0.9;
+}
+
+.time-log-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.time-card {
+  background: var(--color-secondary);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.8rem;
+  border-left: 4px solid var(--color-primary);
+}

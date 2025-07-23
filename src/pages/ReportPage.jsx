@@ -10,7 +10,7 @@ export default function ReportPage() {
 
   useEffect(() => {
     fetchTransactions();
-  }, []);
+  },[]);
 
   async function fetchTransactions() {
     let query = supabase

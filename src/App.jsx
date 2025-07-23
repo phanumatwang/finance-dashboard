@@ -6,7 +6,8 @@ import BalancePage from "./pages/BalancePage";
 import ReportPage from "./pages/ReportPage";
 import BottomNav from "./components/BottomNav";
 import AuthKey from "./pages/AuthKey";
-
+import TimeTrackingPage from "./pages/TimeTrackingPage";
+import PayrollPage from "./pages/PayrollPage";
 import "./theme.css";
 export default function App() {
   const userName = localStorage.getItem("username");
@@ -82,7 +83,7 @@ export default function App() {
         <Route
           path="/"
           element={
-            role === "user" ? <AddPage /> : <DashboardPage />
+            role === "user" ? <TimeTrackingPage /> : <DashboardPage />
           }
         />
 
@@ -95,6 +96,7 @@ export default function App() {
           <>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/balance" element={<BalancePage />} />
+            <Route path="/time-tracking-report" element={<PayrollPage />} />
             {/* ใส่เอกสาร/อื่นๆ ได้ที่นี่ */}
           </>
         )}
@@ -103,6 +105,10 @@ export default function App() {
         {role === "user" && (
           <Route path="*" element={<Navigate to="/add" />} />
         )}
+        <Route path="/time-tracking" element={<TimeTrackingPage />} />
+       
+        {/* ✅ ถ้าเป็น superadmin/admin → รายงานเวลาทำงาน */}
+       
       </Routes>
 
       {/* ✅ ส่ง role ไป BottomNav เพื่อซ่อนเมนู */}

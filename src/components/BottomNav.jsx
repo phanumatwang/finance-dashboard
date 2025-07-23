@@ -49,55 +49,62 @@ export default function BottomNav({ role }) {
       )}
 
       {/* ✅ เมนูย่อยของ "เอกสาร" (เฉพาะ superadmin/admin) */}
-      {openMenu === "docs" &&
-        (role === "superadmin" || role === "admin") && (
-          <div className="submenu">
-            <span className="submenu-title">เอกสาร</span>
-            <NavLink
-              to="/quotation"
-              className="submenu-item"
-              onClick={() => setOpenMenu(null)}
-            >
-              📝 ใบเสนอราคา
-            </NavLink>
-            <NavLink
-              to="/invoice"
-              className="submenu-item"
-              onClick={() => setOpenMenu(null)}
-            >
-              📄 ใบแจ้งหนี้
-            </NavLink>
-            <NavLink
-              to="/docs/add"
-              className="submenu-item"
-              onClick={() => setOpenMenu(null)}
-            >
-              ➕ เพิ่มรายการ
-            </NavLink>
-          </div>
-        )}
+      {openMenu === "docs" && (role === "superadmin" || role === "admin") && (
+        <div className="submenu">
+          <span className="submenu-title">เอกสาร</span>
+          <NavLink
+            to="/quotation"
+            className="submenu-item"
+            onClick={() => setOpenMenu(null)}
+          >
+            📝 ใบเสนอราคา
+          </NavLink>
+          <NavLink
+            to="/invoice"
+            className="submenu-item"
+            onClick={() => setOpenMenu(null)}
+          >
+            📄 ใบแจ้งหนี้
+          </NavLink>
+          <NavLink
+            to="/docs/add"
+            className="submenu-item"
+            onClick={() => setOpenMenu(null)}
+          >
+            ➕ เพิ่มรายการ
+          </NavLink>
+        </div>
+      )}
 
       {/* ✅ เมนูย่อยของ "อื่นๆ" (เฉพาะ superadmin/admin) */}
-      {openMenu === "other" &&
-        (role === "superadmin" || role === "admin") && (
-          <div className="submenu">
-            <span className="submenu-title">อื่นๆ</span>
-            <NavLink
-              to="/company-profile"
-              className="submenu-item"
-              onClick={() => setOpenMenu(null)}
-            >
-              🏢 ข้อมูลบริษัท
-            </NavLink>
-            <NavLink
-              to="/time-tracking"
-              className="submenu-item"
-              onClick={() => setOpenMenu(null)}
-            >
-              ⏱️ บันทึกเวลาทำงาน
-            </NavLink>
-          </div>
-        )}
+      {openMenu === "other" && (
+        <div className="submenu">
+          <span className="submenu-title">อื่นๆ</span>
+          <NavLink
+            to="/company-profile"
+            className="submenu-item"
+            onClick={() => setOpenMenu(null)}
+          >
+            🏢 ข้อมูลบริษัท
+          </NavLink>
+          <NavLink
+            to="/time-tracking"
+            className="submenu-item"
+            onClick={() => setOpenMenu(null)}
+          >
+            ⏱️ บันทึกเวลาทำงาน
+          </NavLink>
+           {(role === "superadmin" || role === "admin") && (
+          <NavLink
+            to="/time-tracking-report"
+            className="submenu-item"
+            onClick={() => setOpenMenu(null)}
+          >
+            📄 รายงานเวลาทำงาน
+          </NavLink>
+           )}
+        </div>
+      )}
 
       {/* ✅ Bottom Navbar หลัก */}
       <div className="bottom-nav">
@@ -129,12 +136,12 @@ export default function BottomNav({ role }) {
             </button>
 
             {/* ✅ กดแล้ว toggle เมนู "อื่นๆ" */}
-            <button className="nav-item" onClick={() => toggleMenu("other")}>
-              <span className="nav-icon">⚙️</span>
-              <span>อื่นๆ</span>
-            </button>
           </>
         )}
+        <button className="nav-item" onClick={() => toggleMenu("other")}>
+          <span className="nav-icon">⚙️</span>
+          <span>อื่นๆ</span>
+        </button>
       </div>
     </div>
   );
