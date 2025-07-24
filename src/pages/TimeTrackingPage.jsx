@@ -167,7 +167,7 @@ export default function TimeTrackingPage() {
             </p>
             <p>📝 {log.description}</p>
             <p>✍️ {log.created_by}</p>
-            <p> {log.status ? "✅ อนุมัติแล้ว" : "⏳ รออนุมัติ"}</p>
+            {/* <p> {log.status ? "✅ อนุมัติแล้ว" : "⏳ รออนุมัติ"}</p> */}
 
             {log.file_url && (
               <div style={{ marginTop: "0.5rem" }}>
