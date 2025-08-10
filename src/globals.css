@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@plugin "daisyui";
+:root {
+  --color-bg: #fafbf9;
+  --color-text: #131810;
+  --color-primary: #6a8a5c;
+  --color-secondary: #ecf1ea;
+  --color-border: #e0e4dc;
+  --color-nav-active: #131810;
+  --color-nav-inactive: #6a8a5c;
+  --color-success: #07881f;
+  --color-danger: #e63946;
+}
+/* ตารางรายการ */
+.items-grid {
+  display: grid;
+  grid-template-columns: 2fr 0.8fr 1fr 1fr 1fr 40px;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.items-grid input {
+  width: 100%;
+  box-sizing: border-box;
+}

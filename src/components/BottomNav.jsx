@@ -53,26 +53,20 @@ export default function BottomNav({ role }) {
         <div className="submenu">
           <span className="submenu-title">เอกสาร</span>
           <NavLink
-            to="/quotation"
+            to="/quot/list"
             className="submenu-item"
             onClick={() => setOpenMenu(null)}
           >
-            📝 ใบเสนอราคา
+            📑 ใบเสนอราคา
           </NavLink>
           <NavLink
-            to="/invoice"
+            to="/quot/add"
             className="submenu-item"
             onClick={() => setOpenMenu(null)}
           >
-            📄 ใบแจ้งหนี้
+            ➕ เพิ่มใบเสนอราคา
           </NavLink>
-          <NavLink
-            to="/docs/add"
-            className="submenu-item"
-            onClick={() => setOpenMenu(null)}
-          >
-            ➕ เพิ่มรายการ
-          </NavLink>
+          
         </div>
       )}
 
@@ -139,7 +133,7 @@ export default function BottomNav({ role }) {
             {/* ✅ กดแล้ว toggle เมนู "เอกสาร" */}
             <button className="nav-item" onClick={() => toggleMenu("docs")}>
               <span className="nav-icon">📄</span>
-              <span>เอกสาร</span>
+              <span>CRM</span>
             </button>
 
             {/* ✅ กดแล้ว toggle เมนู "อื่นๆ" */}

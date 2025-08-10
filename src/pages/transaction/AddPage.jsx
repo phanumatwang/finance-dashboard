@@ -1,6 +1,6 @@
 import "./AddPage.css";
 import { useState } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../../supabase/supabaseClient";
 
 export default function AddPage() {
   const getToday = () => {

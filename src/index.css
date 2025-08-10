@@ -45,7 +45,7 @@ h1, h2, h3, h4, h5 {
 }
 
 /* ✅ ปุ่มมาตรฐาน */
-button {
+.custom-button  {
   border-radius: 8px;
   border: none;
   padding: 0.75rem 1.2rem;
@@ -58,15 +58,14 @@ button {
   transition: opacity 0.25s ease;
 }
 
-button:hover {
+.custom-button:hover {
   opacity: 0.9;
 }
 
-button:focus,
-button:focus-visible {
+.custom-button:focus,
+.custom-button:focus-visible {
   outline: 2px solid var(--color-border);
 }
-
 /* ✅ Responsive: ใช้ Light/Dark Mode ถ้าระบบบังคับ */
 @media (prefers-color-scheme: dark) {
   :root {

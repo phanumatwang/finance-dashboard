@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../../supabase/supabaseClient";
 import "./DashboardPage.css";
 
 export default function DashboardPage() {
@@ -83,7 +83,7 @@ export default function DashboardPage() {
           <h3>{balance.toLocaleString()} บาท</h3>
         </div>
       </div>
-
+    
       {/* ✅ แนวโน้มรายเดือน */}
       <h3 className="chart-title">📈 แนวโน้มรายเดือน</h3>
       <div className="chart-box">

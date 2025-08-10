@@ -1,16 +1,22 @@
 import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import DashboardPage from "./pages/DashboardPage";
-import AddPage from "./pages/AddPage";
-import BalancePage from "./pages/BalancePage";
-import ReportPage from "./pages/ReportPage";
+import DashboardPage from "./pages/report/DashboardPage";
+import AddPage from "./pages/transaction/AddPage";
+import BalancePage from "./pages/transaction/BalancePage";
+import ReportPage from "./pages/report/ReportPage";
 import BottomNav from "./components/BottomNav";
-import AuthKey from "./pages/AuthKey";
-import TimeTrackingPage from "./pages/TimeTrackingPage";
-import PayrollPage from "./pages/PayrollPage";
-import OTApprovePage from "./pages/OTApprovePage";
-import OTRequestPage from "./pages/OTRequestPage";
-import "./theme.css";
+import AuthKey from "./pages/auth/AuthKey";
+import TimeTrackingPage from "./pages/checkin/TimeTrackingPage";
+import PayrollPage from "./pages/payroll/PayrollPage";
+import OTApprovePage from "./pages/ot/OTApprovePage";
+import OTRequestPage from "./pages/ot/OTRequestPage";
+
+import AddCustomerPage from "./pages/crm/AddCustomerPage";
+import ListQuotationPage from "./pages/crm/QuotaionLiatPage";
+import CreateQuotationPage from "./pages/crm/CreateQuotationPage";
+import "./globals.css";
+
+
 export default function App() {
   const userName = localStorage.getItem("username");
   const role = localStorage.getItem("role");
@@ -99,6 +105,11 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/balance" element={<BalancePage />} />
             <Route path="/time-tracking-report" element={<PayrollPage />} />
+            <Route path="/quot/list" element={<ListQuotationPage />} />
+            <Route path="/quot/add" element={<CreateQuotationPage />} />  
+            <Route path="/crm/add" element={<AddCustomerPage />} />
+           
+            
             {/* ใส่เอกสาร/อื่นๆ ได้ที่นี่ */}
           </>
         )}
@@ -114,12 +125,12 @@ export default function App() {
             role === "user" ? <OTRequestPage /> : <OTApprovePage />
           }
         />
-       
+        
        
       </Routes>
 
       {/* ✅ ส่ง role ไป BottomNav เพื่อซ่อนเมนู */}
-      <BottomNav role={role} />
+      <BottomNav   role={role} />
     </div>
   );
 }
