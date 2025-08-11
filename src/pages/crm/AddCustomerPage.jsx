@@ -3,63 +3,152 @@ import { supabase } from "../../supabase/supabaseClient";
 
 export default function AddCustomerPage({ onClose, onSave }) {
   const [customerType, setCustomerType] = useState("บุคคลทั่วไป");
+  const [langTab, setLangTab] = useState("th"); // th | en
+
+  const [saving, setSaving] = useState(false);
+  function getCurrentUser() {
+    const name = localStorage.getItem("username") || null;
+    const role = localStorage.getItem("role") || null;
+    return { name, role };
+  }
+
   const [formData, setFormData] = useState({
-    name: "",
-    companyName: "",
-    contactName: "",
-    position: "",
-    phone: "",
-    lineId: "",
-    address: "",
-    note: "",
+    th: {
+      name: "",
+      companyName: "",
+      contactName: "",
+      position: "",
+      phone: "",
+      lineId: "",
+      address: "",
+      note: "",
+    },
+    en: {
+      name: "",
+      companyName: "",
+      contactName: "",
+      position: "",
+      phone: "",
+      lineId: "",
+      address: "",
+      note: "",
+    },
   });
 
-  const handleChange = (key, value) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+  const handleChange = (lang, key, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [lang]: { ...prev[lang], [key]: value },
+    }));
+  };
+
+  const buildDisplayName = (lang) => {
+    const d = formData[lang];
+    if (customerType === "บุคคลทั่วไป") return d.name?.trim();
+    const company = d.companyName?.trim();
+    const contact = d.contactName?.trim();
+    if (company && contact) return `${company} (${contact})`;
+    return company || contact || "";
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const name =
-      customerType === "บุคคลทั่วไป"
-        ? formData.name
-        : `${formData.companyName} (${formData.contactName})`;
+    if (saving) return; // กันกดซ้ำ
+    setSaving(true);
+    try {
+      const name_th = buildDisplayName("th");
+      const name_en = buildDisplayName("en");
+      const primaryName = name_th || name_en;
+      const primaryPhone = formData.th.phone || formData.en.phone;
 
-    if (!name || !formData.phone) {
-      return alert("❗ กรุณากรอกข้อมูลให้ครบถ้วน");
-    }
+      if (!primaryName || !primaryPhone) {
+        alert("❗ กรุณากรอก 'ชื่อ' และ 'เบอร์โทร' อย่างน้อยในหนึ่งภาษา");
+        return;
+      }
 
-    const { error } = await supabase.from("customers").insert([
-      {
-        name,
-        tel: formData.phone,
+      const { name: currentUserName } = getCurrentUser();
+      const payload = {
+        name: primaryName,
+        tel: primaryPhone,
         type: customerType,
-        company_name: customerType === "บริษัท" ? formData.companyName : null,
-        contact_name: customerType === "บริษัท" ? formData.contactName : null,
-        position: customerType === "บริษัท" ? formData.position : null,
-        line_id: formData.lineId ,
-        address: formData.address || "",
-        note: formData.note || "",
-      },
-    ]);
+        company_name:
+          customerType === "บริษัท" ? formData.th.companyName || null : null,
+        contact_name:
+          customerType === "บริษัท" ? formData.th.contactName || null : null,
+        position:
+          customerType === "บริษัท" ? formData.th.position || null : null,
+        line_id: formData.th.lineId || null,
+        address: formData.th.address || "",
+        note: formData.th.note || "",
+        name_en: name_en || null,
+        company_name_en:
+          customerType === "บริษัท" ? formData.en.companyName || null : null,
+        contact_name_en:
+          customerType === "บริษัท" ? formData.en.contactName || null : null,
+        position_en:
+          customerType === "บริษัท" ? formData.en.position || null : null,
+        line_id_en: formData.en.lineId || null,
+        address_en: formData.en.address || "",
+        note_en: formData.en.note || "",
+        created_by: currentUserName,
+      };
 
-    if (error) return alert("❌ บันทึกลูกค้าไม่สำเร็จ: " + error.message);
-    alert("✅ บันทึกลูกค้าเรียบร้อยแล้ว");
-    if (onSave) onSave(name);
+      const { error } = await supabase.from("customers").insert([payload]);
+      if (error) throw error;
+
+      alert("✅ บันทึกลูกค้าเรียบร้อยแล้ว");
+      onSave?.(primaryName);
+      onClose?.();
+    } catch (err) {
+      alert("❌ บันทึกลูกค้าไม่สำเร็จ: " + (err?.message || err));
+    } finally {
+      setSaving(false);
+    }
   };
+  const L = langTab; // ภาษาที่กำลังแก้ใน UI
 
   return (
     <div className="modal modal-open">
-      <div className="modal-box bg-base-100">
-        <h2 className="font-bold text-xl text-primary mb-4">
-          ➕ เพิ่มลูกค้าใหม่
-        </h2>
-        <form onSubmit={handleSubmit} className="add-form">
+      <div className="modal-box bg-base-100 p-0">
+        <div className="px-5 pt-5 pb-3 border-b">
+          <h2 className="font-bold text-xl text-primary">
+            ➕ เพิ่มลูกค้าใหม่ (ไทย/English)
+          </h2>
+        </div>
+
+        {/* ตัวสลับภาษา */}
+        <div className="flex items-center gap-2 mb-4">
+          <div className="join">
+            <button
+              className={`btn btn-sm join-item ${
+                langTab === "th" ? "btn-primary" : "btn-outline"
+              }`}
+              type="button"
+              onClick={() => setLangTab("th")}
+            >
+              ไทย
+            </button>
+            <button
+              className={`btn btn-sm join-item ${
+                langTab === "en" ? "btn-primary" : "btn-outline"
+              }`}
+              type="button"
+              onClick={() => setLangTab("en")}
+            >
+              English
+            </button>
+          </div>
+          <span className="opacity-70 text-sm">
+            กรอกได้ทั้งสองภาษา — ระบบจะใช้ค่าที่มีอย่างน้อยหนึ่งภาษา
+          </span>
+        </div>
+
+        <form onSubmit={handleSubmit} className="add-form flex flex-col gap-3">
           {/* ประเภทลูกค้า */}
-          <label>
-            ประเภทลูกค้า
-            <div className="flex gap-4 mt-2">
-              <span
+          <label className="flex flex-col gap-2">
+            <span>ประเภทลูกค้า</span>
+            <div className="flex gap-2">
+              <button
                 type="button"
                 className={`btn btn-sm ${
                   customerType === "บุคคลทั่วไป" ? "btn-primary" : "btn-outline"
@@ -67,124 +156,178 @@ export default function AddCustomerPage({ onClose, onSave }) {
                 onClick={() => setCustomerType("บุคคลทั่วไป")}
               >
                 บุคคลทั่วไป
-              </span>
-              <span
+              </button>
+              <button
                 type="button"
                 className={`btn btn-sm ${
                   customerType === "บริษัท" ? "btn-primary" : "btn-outline"
                 }`}
                 onClick={() => setCustomerType("บริษัท")}
               >
-                บริษัท
-              </span>
+                บริษัท / Company
+              </button>
             </div>
           </label>
 
-          {/* แบบฟอร์มตามประเภท */}
+          {/* ฟอร์มตามภาษา + ประเภท */}
           {customerType === "บุคคลทั่วไป" ? (
             <>
-              <label>
-                ชื่อ-นามสกุล
+              <label className="flex flex-col gap-1">
+                <span>
+                  {L === "th" ? "ชื่อ-นามสกุล (ไทย)" : "Full Name (English)"}
+                </span>
                 <input
-                  value={formData.name}
-                  onChange={(e) => handleChange("name", e.target.value)}
-                  placeholder="ชื่อเต็ม"
+                  value={formData[L].name}
+                  onChange={(e) => handleChange(L, "name", e.target.value)}
+                  placeholder={
+                    L === "th" ? "เช่น นายสมชาย ใจดี" : "e.g., John Smith"
+                  }
                 />
               </label>
-              <label>
-                เบอร์โทร
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1">
+                  <span>{L === "th" ? "เบอร์โทร" : "Phone"}</span>
+                  <input
+                    type="tel"
+                    value={formData[L].phone}
+                    onChange={(e) => handleChange(L, "phone", e.target.value)}
+                    placeholder={L === "th" ? "เบอร์มือถือ" : "Mobile"}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span>LINE ID (optional)</span>
+                  <input
+                    value={formData[L].lineId}
+                    onChange={(e) => handleChange(L, "lineId", e.target.value)}
+                    placeholder="Line ID"
+                  />
+                </label>
+              </div>
+
+              <label className="flex flex-col gap-1">
+                <span>
+                  {L === "th" ? "ที่อยู่ (optional)" : "Address (optional)"}
+                </span>
                 <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleChange("phone", e.target.value)}
-                  placeholder="เบอร์มือถือ"
+                  value={formData[L].address}
+                  onChange={(e) => handleChange(L, "address", e.target.value)}
+                  placeholder={
+                    L === "th"
+                      ? "บ้านเลขที่ ถนน เขต/อำเภอ จังหวัด"
+                      : "Street, City, State"
+                  }
                 />
               </label>
-               <label>
-                LINE ID (optional)
+
+              <label className="flex flex-col gap-1">
+                <span>
+                  {L === "th" ? "หมายเหตุ (optional)" : "Note (optional)"}
+                </span>
                 <input
-                  value={formData.lineId}
-                  onChange={(e) => handleChange("lineId", e.target.value)}
-                  placeholder="Line ID"
-                />
-              </label>
-              <label>
-                ที่อยู่ (optional)
-                <input
-                  value={formData.note}
-                  onChange={(e) => handleChange("address", e.target.value)}
-                />
-              </label>
-              <label>
-                หมายเหตุ (optional)
-                <input
-                  value={formData.note}
-                  onChange={(e) => handleChange("note", e.target.value)}
+                  value={formData[L].note}
+                  onChange={(e) => handleChange(L, "note", e.target.value)}
+                  placeholder={
+                    L === "th" ? "รายละเอียดเพิ่มเติม" : "Additional details"
+                  }
                 />
               </label>
             </>
           ) : (
             <>
-              <label>
-                ชื่อบริษัท
+              <label className="flex flex-col gap-1">
+                <span>
+                  {L === "th" ? "ชื่อบริษัท (ไทย)" : "Company Name (English)"}
+                </span>
                 <input
-                  value={formData.companyName}
-                  onChange={(e) => handleChange("companyName", e.target.value)}
-                  placeholder="ชื่อบริษัท"
+                  value={formData[L].companyName}
+                  onChange={(e) =>
+                    handleChange(L, "companyName", e.target.value)
+                  }
+                  placeholder={
+                    L === "th"
+                      ? "เช่น บริษัท เอ บี ซี จำกัด"
+                      : "e.g., ABC Co., Ltd."
+                  }
                 />
               </label>
-              <label>
-                ชื่อผู้ติดต่อ
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1">
+                  <span>{L === "th" ? "ชื่อผู้ติดต่อ" : "Contact Person"}</span>
+                  <input
+                    value={formData[L].contactName}
+                    onChange={(e) =>
+                      handleChange(L, "contactName", e.target.value)
+                    }
+                    placeholder={
+                      L === "th" ? "ชื่อ-นามสกุล" : "First & Last Name"
+                    }
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span>{L === "th" ? "ตำแหน่ง" : "Position"}</span>
+                  <input
+                    value={formData[L].position}
+                    onChange={(e) =>
+                      handleChange(L, "position", e.target.value)
+                    }
+                    placeholder={
+                      L === "th" ? "เช่น ผู้จัดการ" : "e.g., Manager"
+                    }
+                  />
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1">
+                  <span>{L === "th" ? "เบอร์โทร" : "Phone"}</span>
+                  <input
+                    type="tel"
+                    value={formData[L].phone}
+                    onChange={(e) => handleChange(L, "phone", e.target.value)}
+                    placeholder={
+                      L === "th" ? "เบอร์สำนักงาน/มือถือ" : "Office/Mobile"
+                    }
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span>LINE ID (optional)</span>
+                  <input
+                    value={formData[L].lineId}
+                    onChange={(e) => handleChange(L, "lineId", e.target.value)}
+                    placeholder="Line ID"
+                  />
+                </label>
+              </div>
+
+              <label className="flex flex-col gap-1">
+                <span>
+                  {L === "th" ? "ที่อยู่ (optional)" : "Address (optional)"}
+                </span>
                 <input
-                  value={formData.contactName}
-                  onChange={(e) => handleChange("contactName", e.target.value)}
-                  placeholder="ชื่อ-นามสกุลผู้ติดต่อ"
+                  value={formData[L].address}
+                  onChange={(e) => handleChange(L, "address", e.target.value)}
+                  placeholder={L === "th" ? "ที่อยู่บริษัท" : "Company Address"}
                 />
               </label>
-              <label>
-                ตำแหน่ง
+
+              <label className="flex flex-col gap-1">
+                <span>
+                  {L === "th" ? "หมายเหตุ (optional)" : "Note (optional)"}
+                </span>
                 <input
-                  value={formData.position}
-                  onChange={(e) => handleChange("position", e.target.value)}
-                  placeholder="ตำแหน่งในบริษัท"
-                />
-              </label>
-              <label>
-                เบอร์โทร
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleChange("phone", e.target.value)}
-                  placeholder="เบอร์สำนักงาน/มือถือ"
-                />
-              </label>
-              <label>
-                LINE ID (optional)
-                <input
-                  value={formData.lineId}
-                  onChange={(e) => handleChange("lineId", e.target.value)}
-                  placeholder="Line ID"
-                />
-              </label>
-              <label>
-                ที่อยู่ (optional)
-                <input
-                  value={formData.note}
-                  onChange={(e) => handleChange("address", e.target.value)}
-                  placeholder="address"
-                />
-              </label>
-              <label>
-                หมายเหตุ (optional)
-                <input
-                  value={formData.note}
-                  onChange={(e) => handleChange("note", e.target.value)}
+                  value={formData[L].note}
+                  onChange={(e) => handleChange(L, "note", e.target.value)}
+                  placeholder={
+                    L === "th" ? "รายละเอียดเพิ่มเติม" : "Additional details"
+                  }
                 />
               </label>
             </>
           )}
 
-          <button type="submit" className="btn-save">
+          <button type="submit" className="btn btn-primary mt-2">
             ✅ บันทึกข้อมูล
           </button>
         </form>

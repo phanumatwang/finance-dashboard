@@ -25,3 +25,120 @@
   width: 100%;
   box-sizing: border-box;
 }
+.page-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* โมดัลสูงไม่เกินจอ แล้วให้ส่วน body เลื่อน */
+.modal-box {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+.modal-body {
+  overflow-y: auto;
+  max-height: calc(90vh - 120px); /* เว้นที่สำหรับ header+footer */
+}
+/* ใช้ dynamic viewport แทน 100vh (แก้ iOS Safari) */
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* ฟอร์มให้เลื่อนเอง และเว้นพื้นที่สำหรับปุ่ม sticky */
+.form-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 96px; /* กันปุ่มทับเนื้อหา */
+}
+
+/* ปุ่มบันทึกติดก้นจอ */
+.sticky-save {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffffcc;
+  backdrop-filter: blur(2px);
+  padding: 10px 0 12px;
+  box-shadow: 0 -6px 12px rgba(0, 0, 0, 0.06);
+  z-index: 5;
+}
+.sticky-save .btn-save {
+  display: block;
+  width: min(100% - 24px, 520px);
+  margin: 0 auto;
+}
+
+/* ตารางรายการ: ป้องกันล้นด้วย minmax */
+.items-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 2fr) minmax(0, 0.8fr) minmax(0, 1fr)
+    minmax(0, 1fr) minmax(0, 1fr) 40px;
+  gap: 8px;
+  max-width: 100%;
+  align-items: center;
+}
+.items-grid input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ปุ่มลบสีแดง */
+.btn-delete {
+  background: #ff4d4f;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  height: 36px;
+  cursor: pointer;
+}
+.btn-delete:hover { background: #d9363e; }
+
+/* จอเล็กให้ช่องจำนวน/หน่วยแคบลง */
+@media (max-width: 420px) {
+  .items-grid {
+    grid-template-columns:
+      minmax(0, 2fr) 72px 72px minmax(0, 1fr) minmax(0, 1fr) 36px;
+  }
+
+}
+
+/* โมดัลสูงไม่เกินจอ แล้วให้ส่วน body เลื่อน */
+.modal-box {
+  max-height: 90dvh; /* ใช้ dvh */
+  display: flex;
+  flex-direction: column;
+}
+.modal-body {
+  overflow-y: auto;
+  max-height: calc(90dvh - 120px); /* เว้นที่สำหรับ header+footer */
+}
+
+.form-scroll {
+  padding-bottom: calc(64px + 80px); /* 64px = navbar, 80px = เว้นให้ปุ่ม */
+}
+
+/* แถบปุ่มบันทึกให้ลอยอยู่เหนือ navbar */
+.save-bar {
+  position: sticky;
+  bottom: 64px; /* ความสูง navbar */
+  z-index: 30; /* สูงกว่า navbar */
+  background: var(--color-bg);
+  padding: 10px;
+  box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.save-bar .btn-save {
+  width: 100%;
+  background: var(--color-primary);
+  color: white;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+}

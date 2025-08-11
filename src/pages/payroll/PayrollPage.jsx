@@ -41,7 +41,8 @@ export default function PayrollPage() {
       .eq("status", "approved")
       .order("date", { ascending: true });
 
-    if (error || otError) return console.error(error?.message || otError?.message);
+    if (error || otError)
+      return console.error(error?.message || otError?.message);
 
     const allLogs = [
       ...(data || []),
@@ -75,7 +76,8 @@ export default function PayrollPage() {
       .from("uploads")
       .upload(`payroll/${Date.now()}-${paymentProof.name}`, paymentProof);
 
-    if (uploadError) return alert("❌ อัปโหลดหลักฐานไม่สำเร็จ: " + uploadError.message);
+    if (uploadError)
+      return alert("❌ อัปโหลดหลักฐานไม่สำเร็จ: " + uploadError.message);
 
     const { data: publicUrl } = supabase.storage
       .from("uploads")
@@ -95,7 +97,10 @@ export default function PayrollPage() {
       },
     ]);
 
-    if (insertTransaction.error) return alert("❌ บันทึก Transaction ไม่สำเร็จ: " + insertTransaction.error.message);
+    if (insertTransaction.error)
+      return alert(
+        "❌ บันทึก Transaction ไม่สำเร็จ: " + insertTransaction.error.message
+      );
 
     const updateStatus = await supabase
       .from("time_tracking")
@@ -106,7 +111,9 @@ export default function PayrollPage() {
     if (updateStatus.error) {
       alert("⚠️ เปลี่ยนสถานะไม่สำเร็จ แต่ Transaction ถูกบันทึกแล้ว");
     } else {
-      alert(`✅ จ่ายค่าแรง ${selectedUser} สำเร็จ (${totalWage.toLocaleString()} บาท)`);
+      alert(
+        `✅ จ่ายค่าแรง ${selectedUser} สำเร็จ (${totalWage.toLocaleString()} บาท)`
+      );
       fetchUserLogs(selectedUser);
       fetchUsers();
       setPaymentProof(null);
@@ -115,89 +122,100 @@ export default function PayrollPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <div className="card bg-base-100 shadow-xl p-6 space-y-4">
-        <h2 className="text-2xl font-bold flex items-center gap-2 text-primary">
-          💵 ระบบจ่ายเงิน
-        </h2>
-
-        <label className="form-control w-full">
-          <div className="label">
-            <span className="label-text">👤 เลือกพนักงาน</span>
-          </div>
-          <select
-            className="select select-bordered w-full"
-            value={selectedUser}
-            onChange={(e) => fetchUserLogs(e.target.value)}
-          >
-            <option value="">-- เลือก --</option>
-            {users.map((u, idx) => (
-              <option key={idx} value={u}>
-                {u}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {selectedUser && (
-          <>
-            <h3 className="text-lg font-bold text-primary bg-secondary px-4 py-2 rounded">📜 รายการที่อนุมัติแล้ว</h3>
-
-            {logs.length === 0 ? (
-              <p className="text-gray-500">ไม่มีรายการที่อนุมัติแล้ว</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="table table-zebra w-full mt-4">
-                  <thead>
-                    <tr>
-                      <th>📅 วันที่</th>
-                      <th>📝 รายละเอียด</th>
-                      <th className="text-right">💰 ค่าแรง</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {logs.map((log) => (
-                      <tr className="text-lg font-bold text-primary bg-secondary px-4 py-2 rounded" key={log.id}>
-                        <td>{log.date}</td>
-                        <td>{log.description}</td>
-                        <td className="text-right text-green-600 font-semibold">
-                          {log.wage_amount?.toLocaleString()} บาท
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            <h3 className="text-lg font-semibold text-green-700">
-              💰 รวมค่าแรงทั้งหมด: {totalWage.toLocaleString()} บาท
-            </h3>
+    <div className="form-scroll">
+      <div className="payrool-root">
+        <div className="max-w-2xl mx-auto p-4">
+          <div className="card bg-base-100 shadow-xl p-6 space-y-4">
+            <h2 className="text-2xl font-bold flex items-center gap-2 text-primary">
+              💵 ระบบจ่ายเงิน
+            </h2>
 
             <label className="form-control w-full">
               <div className="label">
-                <span className="label-text">📎 แนบหลักฐานการจ่ายเงิน</span>
+                <span className="label-text">👤 เลือกพนักงาน</span>
               </div>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleProofFile}
-                className="file-input file-input-bordered w-full"
-              />
+              <select
+                className="select select-bordered w-full"
+                value={selectedUser}
+                onChange={(e) => fetchUserLogs(e.target.value)}
+              >
+                <option value="">-- เลือก --</option>
+                {users.map((u, idx) => (
+                  <option key={idx} value={u}>
+                    {u}
+                  </option>
+                ))}
+              </select>
             </label>
-            {proofFileName && (
-              <p className="text-sm text-gray-600 mt-1">📄 {proofFileName}</p>
-            )}
 
-            <button
-              className="btn btn-success w-full mt-4"
-              onClick={handlePaySalary}
-              disabled={!paymentProof || logs.length === 0}
-            >
-              ✅ จ่ายเงิน
-            </button>
-          </>
-        )}
+            {selectedUser && (
+              <>
+                <h3 className="text-lg font-bold text-primary bg-secondary px-4 py-2 rounded">
+                  📜 รายการที่อนุมัติแล้ว
+                </h3>
+
+                {logs.length === 0 ? (
+                  <p className="text-gray-500">ไม่มีรายการที่อนุมัติแล้ว</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="table table-zebra w-full mt-4">
+                      <thead>
+                        <tr>
+                          <th>📅 วันที่</th>
+                          <th>📝 รายละเอียด</th>
+                          <th className="text-right">💰 ค่าแรง</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {logs.map((log) => (
+                          <tr
+                            className="text-lg font-bold text-primary bg-secondary px-4 py-2 rounded"
+                            key={log.id}
+                          >
+                            <td>{log.date}</td>
+                            <td>{log.description}</td>
+                            <td className="text-right text-green-600 font-semibold">
+                              {log.wage_amount?.toLocaleString()} บาท
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                <h3 className="text-lg font-semibold text-green-700">
+                  💰 รวมค่าแรงทั้งหมด: {totalWage.toLocaleString()} บาท
+                </h3>
+
+                <label className="form-control w-full">
+                  <div className="label">
+                    <span className="label-text">📎 แนบหลักฐานการจ่ายเงิน</span>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProofFile}
+                    className="file-input file-input-bordered w-full"
+                  />
+                </label>
+                {proofFileName && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    📄 {proofFileName}
+                  </p>
+                )}
+
+                <button
+                  className="btn btn-success w-full mt-4"
+                  onClick={handlePaySalary}
+                  disabled={!paymentProof || logs.length === 0}
+                >
+                  ✅ จ่ายเงิน
+                </button>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

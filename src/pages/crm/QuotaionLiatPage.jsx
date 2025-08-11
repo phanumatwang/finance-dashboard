@@ -3,20 +3,30 @@ import { supabase } from "../../supabase/supabaseClient";
 import { format } from "date-fns";
 import { generateQuotationPDF } from "../../generateQuotationPDF";
 
+// ✅ ฟังก์ชันคำนวณเลข Revision
+function nextRevisionNumber(no = "") {
+  // ตัดช่องว่างและเช็คว่ามี -R อยู่แล้วไหม
+  const m = /^(.*?)(?:-R(\d+))?$/.exec(no.trim());
+  const base = (m && m[1]) || no.trim();
+  const next = m && m[2] ? parseInt(m[2], 10) + 1 : 1;
+  return `${base}-R${next}`;
+}
+
 export default function ListQuotationPage() {
   const [quotations, setQuotations] = useState([]);
   const [selectedPdfUrl, setSelectedPdfUrl] = useState("");
   const [selectedFileName, setSelectedFileName] = useState("");
   const dialogRef = useRef();
 
+  const fetchQuotations = async () => {
+    const { data, error } = await supabase
+      .from("quotations")
+      .select("*, customers(name, address, tel)")
+      .order("created_at", { ascending: false });
+    if (!error) setQuotations(data || []);
+  };
+
   useEffect(() => {
-    const fetchQuotations = async () => {
-      const { data, error } = await supabase
-        .from("quotations")
-        .select("*, customers(name, address, tel)")
-        .order("created_at", { ascending: false });
-      if (!error) setQuotations(data);
-    };
     fetchQuotations();
   }, []);
 
@@ -26,7 +36,33 @@ export default function ListQuotationPage() {
 
     setSelectedPdfUrl(url);
     setSelectedFileName(`ใบเสนอราคา-${customer.name}.pdf`);
-    dialogRef.current?.showModal(); // ✅ เปิด popup
+    dialogRef.current?.showModal();
+  };
+
+  // ✅ กดแก้ไข -> เพิ่ม R และอัปเดตฐานข้อมูล
+  const handleEdit = async (q) => {
+    const newNo = nextRevisionNumber(q.number || "");
+    const ok = confirm(`ยืนยันแก้ไขใบเสนอราคา?\nระบบจะเปลี่ยนเลขที่เป็น: ${newNo}`);
+    if (!ok) return;
+
+    const { error } = await supabase
+      .from("quotations")
+      .update({
+        number: newNo,
+        status: "revised",                 // ใส่สถานะใหม่เผื่อใช้งานต่อ
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", q.id);
+
+    if (error) {
+      alert("อัปเดตเลขที่ไม่สำเร็จ: " + error.message);
+      return;
+    }
+
+    alert("อัปเดตเรียบร้อย");
+    fetchQuotations();
+    // ถ้ามีหน้าแก้ไขจริง ๆ ให้พาไปหน้านั้นได้ (ปรับ path ให้ตรงโปรเจ็กต์)
+    // window.location.href = `/crm/create-quotation?id=${q.id}`;
   };
 
   const downloadFile = () => {
@@ -55,14 +91,20 @@ export default function ListQuotationPage() {
               <div className="card-header">
                 <p>📅 <b>{format(new Date(q.created_at), "yyyy-MM-dd")}</b></p>
               </div>
+              <p>เลขที่: {q.number || "-"}</p>
               <p>👤 ลูกค้า: {q.customers?.name || "-"}</p>
               <p>🧾 รายการ: {q.items?.length || 0} รายการ</p>
               <p className="amount-income">💵 {Number(q.total).toLocaleString()} บาท</p>
               <p>📝 หมายเหตุ: {q.note || "-"}</p>
 
-              <button className="btn-view" onClick={() => handleDownloadPDF(q)}>
-                🧾 ดู PDF
-              </button>
+              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                <button className="btn-view" onClick={() => handleDownloadPDF(q)}>
+                  🧾 ดู PDF
+                </button>
+                <button className="btn-view" style={{ background:'#d9534f' }} onClick={() => handleEdit(q)}>
+                  ✏️ แก้ไข
+                </button>
+              </div>
             </li>
           ))}
         </ul>

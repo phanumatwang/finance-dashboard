@@ -30,13 +30,26 @@ export default function CreateQuotationPage() {
   }, []);
 
   useEffect(() => {
-    const lower = customerName.toLowerCase();
-    const filtered = customers.filter(
-      (c) =>
-        (c.name || "").toLowerCase().includes(lower) ||
-        (c.company_name || "").toLowerCase().includes(lower) ||
-        (c.contact_name || "").toLowerCase().includes(lower)
+    const norm = (v) => (v ?? "").toString().trim().toLowerCase();
+    const q = norm(customerName);
+    if (!q) {
+      setFilteredCustomers(customers.slice(0, 5));
+      return;
+    }
+
+    // ช่องที่จะใช้ค้นหา (เพิ่ม/ลดได้)
+    const fields = [
+      "name",
+      "company_name",
+      "contact_name",
+      "name_en",
+      "company_name_en",
+    ];
+
+    const filtered = customers.filter((c) =>
+      fields.some((f) => norm(c[f]).includes(q))
     );
+
     setFilteredCustomers(filtered.slice(0, 5));
   }, [customerName, customers]);
 
@@ -132,269 +145,305 @@ export default function CreateQuotationPage() {
   };
 
   return (
-    <div className="add-root">
-      <h2 className="add-header">📄 บันทึกใบเสนอราคา</h2>
-      <form className="add-form" onSubmit={handleSubmit}>
-        {/* เลขที่ใบเสนอราคา */}
-        <label>
-          เลขที่ใบเสนอราคา
-          <input
-            type="text"
-            value={quotationNo}
-            onChange={(e) => setQuotationNo(e.target.value)}
-            placeholder="เช่น QU-2025-0001"
-          />
-        </label>
-
-        {/* ลูกค้า */}
-        <label>
-          ชื่อลูกค้า
-          <div style={{ display: "flex", gap: "8px", position: "relative" }}>
+    <div className="form-scroll">
+      <div className="add-root">
+        <h2 className="add-header">📄 บันทึกใบเสนอราคา</h2>
+        <form className="add-form" onSubmit={handleSubmit}>
+          {/* เลขที่ใบเสนอราคา */}
+          <label>
+            เลขที่ใบเสนอราคา
             <input
               type="text"
-              placeholder="ใส่ชื่อลูกค้า"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              style={{ flex: 1, padding: "0.4rem 0.6rem" }}
+              value={quotationNo}
+              onChange={(e) => setQuotationNo(e.target.value)}
+              placeholder="เช่น QU-2025-0001"
             />
-            {customerName && filteredCustomers.length > 0 && (
-              <ul
-                style={{
-                  position: "absolute",
-                  top: "100%",
-                  left: 0,
-                  right: 0,
-                  background: "#fff",
-                  border: "1px solid #ddd",
-                  zIndex: 10,
-                  maxHeight: "150px",
-                  overflowY: "auto",
-                  listStyle: "none",
-                  padding: "0.5rem",
-                  margin: 0,
-                }}
-              >
-                {filteredCustomers.map((c) => (
-                  <li
-                    key={c.id}
-                    onClick={() => {
-                      setCustomerName(c.name);
-                      setCustomerId(c.id);
-                      setFilteredCustomers([]);
-                    }}
-                    style={{
-                      padding: "4px 8px",
-                      cursor: "pointer",
-                      borderBottom: "1px solid #eee",
-                    }}
-                  >
-                    <strong>{c.name}</strong>
-                    {c.company_name && (
-                      <>
-                        <br />
-                        <span style={{ fontSize: "0.8em", color: "#888" }}>
-                          {c.company_name} (
-                          {c.contact_name || "ไม่ระบุผู้ติดต่อ"})
-                        </span>
-                      </>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-            <span
-              className="btn-save"
-              onClick={() => setShowCustomerModal(true)}
-              style={{ padding: "0.6rem 1rem" }}
-            >
-              ➕
-            </span>
-          </div>
-        </label>
+          </label>
 
-        {/* รายการ */}
-        <label>
-          รายการสินค้า / บริการ
+          {/* ลูกค้า */}
+          <label>
+            ชื่อลูกค้า
+            <div style={{ display: "flex", gap: "8px", position: "relative" }}>
+              <input
+                type="text"
+                placeholder="ใส่ชื่อลูกค้า"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                style={{ flex: 1, padding: "0.4rem 0.6rem" }}
+              />
+              {customerName && filteredCustomers.length > 0 && (
+                <ul
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: 0,
+                    right: 0,
+                    background: "#fff",
+                    border: "1px solid #ddd",
+                    zIndex: 10,
+                    maxHeight: "150px",
+                    overflowY: "auto",
+                    listStyle: "none",
+                    padding: "0.5rem",
+                    margin: 0,
+                  }}
+                >
+                  {filteredCustomers.map((c) => (
+                    <li
+                      key={c.id}
+                      onClick={() => {
+                        setCustomerName(c.name);
+                        setCustomerId(c.id);
+                        setFilteredCustomers([]);
+                      }}
+                      style={{
+                        padding: "4px 8px",
+                        cursor: "pointer",
+                        borderBottom: "1px solid #eee",
+                      }}
+                    >
+                      <strong>{c.name}</strong>
+                      {c.company_name && (
+                        <>
+                          <br />
+                          <span style={{ fontSize: "0.8em", color: "#888" }}>
+                            {c.company_name} (
+                            {c.contact_name || "ไม่ระบุผู้ติดต่อ"})
+                          </span>
+                        </>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <span
+                className="btn-save"
+                onClick={() => setShowCustomerModal(true)}
+                style={{ padding: "0.6rem 1rem" }}
+              >
+                ➕
+              </span>
+            </div>
+          </label>
+
+          {/* รายการ */}
+          <label>
+            รายการสินค้า / บริการ
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "2fr 0.8fr 1fr 1fr 1fr 40px",
+                gap: 8,
+                marginTop: 6,
+                fontWeight: 600,
+              }}
+            >
+              <div>ชื่อรายการ</div>
+              <div style={{ textAlign: "right" }}>จำนวน</div>
+              <div>หน่วย</div>
+              <div style={{ textAlign: "right" }}>ราคาต่อหน่วย</div>
+              <div style={{ textAlign: "right" }}>ราคารวม</div>
+              <div></div>
+            </div>
+            {items.map((it, idx) => (
+              <div
+                className="items-grid"
+                key={idx}
+                style={{ alignItems: "center" }}
+              >
+                <input
+                  type="text"
+                  value={it.name}
+                  onChange={(e) =>
+                    handleItemChange(idx, "name", e.target.value)
+                  }
+                />
+                {/* จำนวน */}
+                <input
+                  type="text" // จะพิมพ์ได้ลื่นกว่า number
+                  inputMode="numeric"
+                  value={it.qty}
+                  onChange={(e) =>
+                    handleItemChange(
+                      idx,
+                      "qty",
+                      e.target.value.replace(/[^\d.]/g, "")
+                    )
+                  }
+                  style={{ textAlign: "right" }}
+                />
+
+                {/* หน่วย */}
+                <input
+                  type="text"
+                  value={it.unit}
+                  onChange={(e) =>
+                    handleItemChange(idx, "unit", e.target.value)
+                  }
+                />
+
+                {/* ราคาต่อหน่วย */}
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={it.unit_price}
+                  onChange={(e) =>
+                    handleItemChange(
+                      idx,
+                      "unit_price",
+                      e.target.value.replace(/[^\d.]/g, "")
+                    )
+                  }
+                  style={{ textAlign: "right" }}
+                />
+
+                <input
+                  value={lineTotal(it).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                  })}
+                  readOnly
+                  style={{ textAlign: "right", background: "#f7f7f7" }}
+                />
+                <button
+                  className="btn-delete"
+                  type="button"
+                  onClick={() => removeItem(idx)}
+                >
+                  ✖
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addItem}
+              className="btn-save"
+              style={{ marginTop: 8, width: "fit-content" }}
+            >
+              ➕ เพิ่มรายการ
+            </button>
+          </label>
+          {/* ส่วนลด & VAT */}
           <div
+            className="discount-vat-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: "2fr 0.8fr 1fr 1fr 1fr 40px",
-              gap: 8,
+              gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", // 2 คอลัมน์
+              gap: 12,
               marginTop: 6,
               fontWeight: 600,
+              width: "100%",
+              alignItems: "center",
             }}
           >
-            <div>ชื่อรายการ</div>
-            <div style={{ textAlign: "right" }}>จำนวน</div>
-            <div>หน่วย</div>
-            <div style={{ textAlign: "right" }}>ราคาต่อหน่วย</div>
-            <div style={{ textAlign: "right" }}>ราคารวม</div>
-            <div></div>
-          </div>
-          {items.map((it, idx) => (
-            <div
-              className="items-grid"
-              key={idx}
-              style={{ alignItems: "center" }}
+            <label
+              style={{ display: "flex", flexDirection: "column", minWidth: 0 }}
             >
+              ส่วนลด (%)
               <input
-                type="text"
-                value={it.name}
-                onChange={(e) => handleItemChange(idx, "name", e.target.value)}
+                type="number"
+                min="0"
+                step="0.01"
+                value={discountPercent}
+                onChange={(e) => setDiscountPercent(e.target.value)}
+                placeholder="เช่น 2"
+                style={{ width: "100%", boxSizing: "border-box" }}
               />
-              {/* จำนวน */}
-              <input
-                type="text" // จะพิมพ์ได้ลื่นกว่า number
-                inputMode="numeric"
-                value={it.qty}
-                onChange={(e) =>
-                  handleItemChange(
-                    idx,
-                    "qty",
-                    e.target.value.replace(/[^\d.]/g, "")
-                  )
-                }
-                style={{ textAlign: "right" }}
-              />
+            </label>
 
-              {/* หน่วย */}
+            <label
+              style={{ display: "flex", flexDirection: "column", minWidth: 0 }}
+            >
+              VAT (%)
               <input
-                type="text"
-                value={it.unit}
-                onChange={(e) => handleItemChange(idx, "unit", e.target.value)}
+                type="number"
+                min="0"
+                step="0.01"
+                value={vatPercent}
+                onChange={(e) => setVatPercent(e.target.value)}
+                placeholder="เช่น 7"
+                style={{ width: "100%", boxSizing: "border-box" }}
               />
+            </label>
+          </div>
 
-              {/* ราคาต่อหน่วย */}
-              <input
-                type="text"
-                inputMode="decimal"
-                value={it.unit_price}
-                onChange={(e) =>
-                  handleItemChange(
-                    idx,
-                    "unit_price",
-                    e.target.value.replace(/[^\d.]/g, "")
-                  )
-                }
-                style={{ textAlign: "right" }}
-              />
+          {/* หมายเหตุ */}
+          <label>
+            หมายเหตุ
+            <textarea
+              placeholder="เพิ่มเติม เช่น เงื่อนไข"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={3}
+            />
+          </label>
 
-              <input
-                value={lineTotal(it).toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                })}
-                readOnly
-                style={{ textAlign: "right", background: "#f7f7f7" }}
-              />
-              <button className="btn-delete" type="button" onClick={() => removeItem(idx)}>
-                ✖
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={addItem}
-            className="btn-save"
-            style={{ marginTop: 8, width: "fit-content" }}
+          {/* แสดงผลรวม */}
+          <div
+            style={{
+              marginTop: 12,
+              background: "#f8f8f8",
+              border: "1px solid #eee",
+              padding: 12,
+              borderRadius: 8,
+            }}
           >
-            ➕ เพิ่มรายการ
-          </button>
-        </label>
+            <div>
+              รวมเป็นเงิน:{" "}
+              {subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
+              บาท
+            </div>
+            <div>
+              ส่วนลด ({discountPercent || 0}%): -
+              {discountAmount.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}{" "}
+              บาท
+            </div>
+            <div>
+              ยอดหลังหักส่วนลด:{" "}
+              {afterDiscount.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}{" "}
+              บาท
+            </div>
+            <div>
+              ภาษีมูลค่าเพิ่ม ({vatPercent || 0}%):{" "}
+              {vatAmount.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}{" "}
+              บาท
+            </div>
+            <div
+              style={{ fontWeight: "bold", fontSize: 18, textAlign: "right" }}
+            >
+              💰 ยอดสุทธิ:{" "}
+              {totalPrice.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}{" "}
+              บาท
+            </div>
+          </div>
+          
+            <button
+              type="submit"
+              className="btn-save"
+              style={{ marginTop: 12 }}
+            >
+              ✅ บันทึกข้อมูล
+            </button>
+          
+        </form>
 
-        {/* ส่วนลด & VAT */}
-        <div
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}
-        >
-          <label>
-            ส่วนลด (%)
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={discountPercent}
-              onChange={(e) => setDiscountPercent(e.target.value)}
-              placeholder="เช่น 2"
-            />
-          </label>
-          <label>
-            VAT (%)
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={vatPercent}
-              onChange={(e) => setVatPercent(e.target.value)}
-              placeholder="เช่น 7"
-            />
-          </label>
-        </div>
-
-        {/* หมายเหตุ */}
-        <label>
-          หมายเหตุ
-          <textarea
-            placeholder="เพิ่มเติม เช่น เงื่อนไข"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            rows={3}
+        {showCustomerModal && (
+          <AddCustomerModal
+            onClose={() => setShowCustomerModal(false)}
+            onSave={(newName) => {
+              setCustomerName(newName);
+              setShowCustomerModal(false);
+            }}
           />
-        </label>
-
-        {/* แสดงผลรวม */}
-        <div
-          style={{
-            marginTop: 12,
-            background: "#f8f8f8",
-            border: "1px solid #eee",
-            padding: 12,
-            borderRadius: 8,
-          }}
-        >
-          <div>
-            รวมเป็นเงิน:{" "}
-            {subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
-            บาท
-          </div>
-          <div>
-            ส่วนลด ({discountPercent || 0}%): -
-            {discountAmount.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}{" "}
-            บาท
-          </div>
-          <div>
-            ยอดหลังหักส่วนลด:{" "}
-            {afterDiscount.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}{" "}
-            บาท
-          </div>
-          <div>
-            ภาษีมูลค่าเพิ่ม ({vatPercent || 0}%):{" "}
-            {vatAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
-            บาท
-          </div>
-          <div style={{ fontWeight: "bold", fontSize: 18, textAlign: "right" }}>
-            💰 ยอดสุทธิ:{" "}
-            {totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
-            บาท
-          </div>
-        </div>
-
-        <button type="submit" className="btn-save" style={{ marginTop: 12 }}>
-          ✅ บันทึกข้อมูล
-        </button>
-      </form>
-
-      {showCustomerModal && (
-        <AddCustomerModal
-          onClose={() => setShowCustomerModal(false)}
-          onSave={(newName) => {
-            setCustomerName(newName);
-            setShowCustomerModal(false);
-          }}
-        />
-      )}
+        )}
+      </div>
     </div>
   );
 }
