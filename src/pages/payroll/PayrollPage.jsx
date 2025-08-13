@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../supabase/supabaseClient";
-
+import { useLoading } from "../../components/LoadingContext";
 export default function PayrollPage() {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState("");
@@ -8,7 +8,7 @@ export default function PayrollPage() {
   const [totalWage, setTotalWage] = useState(0);
   const [paymentProof, setPaymentProof] = useState(null);
   const [proofFileName, setProofFileName] = useState("");
-
+  const { setIsLoading } = useLoading();
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -119,6 +119,9 @@ export default function PayrollPage() {
       setPaymentProof(null);
       setProofFileName("");
     }
+    setIsLoading(true);
+    await new Promise((r) => setTimeout(r, 2000)); // simulate
+    setIsLoading(false);
   }
 
   return (

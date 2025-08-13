@@ -10,7 +10,29 @@ export default function ReportPage() {
 
   useEffect(() => {
     fetchTransactions();
-  },[]);
+  }, []);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+          }
+        });
+      },
+      {
+        threshold: 0.1, // 10% visible ถึงจะแสดง
+      }
+    );
+
+    const cards = document.querySelectorAll(".time-card");
+    cards.forEach((card) => observer.observe(card));
+
+    // Cleanup
+    return () => {
+      cards.forEach((card) => observer.unobserve(card));
+    };
+  }, [transactions]);
 
   async function fetchTransactions() {
     let query = supabase
@@ -86,7 +108,7 @@ export default function ReportPage() {
           {transactions.map((item) => (
             <li
               key={item.id}
-              className={`report-card ${
+              className={`report-card time-card ${
                 item.category === "รายรับ" ? "income" : "expense"
               }`}
             >

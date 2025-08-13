@@ -1,6 +1,9 @@
 import "./AddPage.css";
 import { useState } from "react";
 import { supabase } from "../../supabase/supabaseClient";
+import { resizeImageFile } from "../../utils/imageUtils";
+import PageLoader from "../../components/PageLoader";
+import { useLoading } from "../../components/LoadingContext"; // เพิ่มบรรทัดนี้
 
 export default function AddPage() {
   const getToday = () => {
@@ -15,21 +18,29 @@ export default function AddPage() {
   const [amount, setAmount] = useState("");
   const userName = localStorage.getItem("username"); // ✅ ดึงชื่อคนที่ login อยู่
   const role = localStorage.getItem("role");
-  function handleFileChange(e) {
-    if (e.target.files.length > 0) {
-      setFile(e.target.files[0]);
-      setFileName(e.target.files[0].name);
-    } else {
-      setFile(null);
-      setFileName("");
+  // const MAX_FILE_SIZE_MB = 2;
+  // const MAX_WIDTH = 1024; // ปรับตามต้องการ
+  async function handleFileChange(e) {
+      const selectedFile = e.target.files[0];
+      if (!selectedFile) return;
+  
+      try {
+        const resized = await resizeImageFile(selectedFile, 2, 1024); // 2MB, 1024px
+        setFile(resized);
+        setFileName(resized.name);
+      } catch (err) {
+        alert("❌ " + err.message);
+        setFile(null);
+        setFileName("");
+      }
     }
-  }
-
+  const { setIsLoading } = useLoading(); // ✅ ดึงมาจาก context
   async function handleSubmit(e) {
     e.preventDefault();
 
     let imageUrl = null;
-
+    setIsLoading(true);
+   
     // ✅ ถ้ามีไฟล์ → upload ไป Supabase Storage
     if (file) {
       const { data, error } = await supabase.storage
@@ -54,11 +65,11 @@ export default function AddPage() {
       {
         date,
         category,
-        description,           // ✅ ใช้ description ที่ตรงกับ DB
+        description, // ✅ ใช้ description ที่ตรงกับ DB
         amount: parseFloat(amount),
         file_url: imageUrl,
         created_by: userName, // ✅ บันทึกชื่อผู้บันทึก
-        status: role === "user" ? "pending" : "approved"  
+        status: role === "user" ? "pending" : "approved",
       },
     ]);
 
@@ -70,15 +81,19 @@ export default function AddPage() {
       // ✅ Reset ฟอร์ม
       setDate("");
       setCategory("รายจ่าย");
-      setDescription("");  // ✅ Reset ตรงนี้
+      setDescription(""); // ✅ Reset ตรงนี้
       setAmount("");
       setFile(null);
       setFileName("");
     }
+    await new Promise((r) => setTimeout(r, 2000)); // simulate
+    setIsLoading(false); // ⏳ เริ่มแสดง loading
   }
 
   return (
+    
     <div className="add-root">
+       <PageLoader />
       <div className="add-header">บันทึกรายการ</div>
 
       <form className="add-form" onSubmit={handleSubmit}>
@@ -107,7 +122,7 @@ export default function AddPage() {
           <input
             type="text"
             placeholder="เช่น เงินเดือน / ค่าอาหาร"
-            value={description}                 // ✅ ตรงกัน
+            value={description} // ✅ ตรงกัน
             onChange={(e) => setDescription(e.target.value)}
           />
         </label>

@@ -12,10 +12,10 @@ import OTApprovePage from "./pages/ot/OTApprovePage";
 import OTRequestPage from "./pages/ot/OTRequestPage";
 
 import AddCustomerPage from "./pages/crm/AddCustomerPage";
-import ListQuotationPage from "./pages/crm/QuotaionLiatPage";
+import ListQuotationPage from "./pages/crm/QuotationLiatPage";
 import CreateQuotationPage from "./pages/crm/CreateQuotationPage";
 import "./globals.css";
-
+import PageLoader from "./components/PageLoader";
 
 export default function App() {
   const userName = localStorage.getItem("username");
@@ -53,7 +53,9 @@ export default function App() {
  
 
   return (
+    
     <div className="app-root">
+      <PageLoader />
       {/* ✅ Header */}
       <div
         style={{
@@ -85,7 +87,7 @@ export default function App() {
           🚪 Logout
         </button>
       </div>
-
+          
        <Routes>
         {/* ✅ ถ้าเป็น superadmin/admin → หน้า Dashboard | ถ้า viewer → AddPage */}
         <Route

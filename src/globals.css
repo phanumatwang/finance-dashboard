@@ -122,18 +122,26 @@
 .form-scroll {
   padding-bottom: calc(64px + 80px); /* 64px = navbar, 80px = เว้นให้ปุ่ม */
 }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
 
 /* แถบปุ่มบันทึกให้ลอยอยู่เหนือ navbar */
-.save-bar {
+/* .save-bar {
   position: sticky;
-  bottom: 64px; /* ความสูง navbar */
-  z-index: 30; /* สูงกว่า navbar */
+  bottom: 64px; 
+  z-index: 30; 
   background: var(--color-bg);
   padding: 10px;
   box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.05);
-}
+} */
 
-.save-bar .btn-save {
+/* .save-bar .btn-save {
   width: 100%;
   background: var(--color-primary);
   color: white;
@@ -141,4 +149,4 @@
   border-radius: 6px;
   font-size: 1rem;
   font-weight: bold;
-}
+} */

@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../supabase/supabaseClient";
 import "./TimeTrackingPage.css";
-
+import { resizeImageFile } from "../../utils/imageUtils";
+import { useLoading } from "../../components/LoadingContext";
 export default function TimeTrackingPage() {
+   const { setIsLoading } = useLoading();
   const userName = localStorage.getItem("username");
   const role = localStorage.getItem("role"); // ✅ ดูสิทธิ์ user/admin/superadmin
   const wage_amount = localStorage.getItem("wage");
@@ -11,10 +13,34 @@ export default function TimeTrackingPage() {
   const [fileName, setFileName] = useState("");
   const [logs, setLogs] = useState([]);
   const [alreadyLoggedToday, setAlreadyLoggedToday] = useState(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const MAX_FILE_SIZE_MB = 2;
+  const MAX_WIDTH = 1024; // ปรับตามต้องการ
   useEffect(() => {
     fetchLogs();
   }, []);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+          }
+        });
+      },
+      {
+        threshold: 0.1, // 10% visible ถึงจะแสดง
+      }
+    );
+
+    const cards = document.querySelectorAll(".time-card");
+    cards.forEach((card) => observer.observe(card));
+
+    // Cleanup
+    return () => {
+      cards.forEach((card) => observer.unobserve(card));
+    };
+  }, [logs]);
 
   async function fetchLogs() {
     const today = new Date().toISOString().split("T")[0];
@@ -42,26 +68,32 @@ export default function TimeTrackingPage() {
     }
   }
 
-  function handleFileChange(e) {
-    if (e.target.files.length > 0) {
-      setFile(e.target.files[0]);
-      setFileName(e.target.files[0].name);
-    } else {
+  async function handleFileChange(e) {
+    const selectedFile = e.target.files[0];
+    if (!selectedFile) return;
+
+    try {
+      const resized = await resizeImageFile(selectedFile, 2, 1024); // 2MB, 1024px
+      setFile(resized);
+      setFileName(resized.name);
+    } catch (err) {
+      alert("❌ " + err.message);
       setFile(null);
       setFileName("");
     }
   }
-
   async function handleSubmit(e) {
     e.preventDefault();
-
+    setIsLoading(true);
+    
     if (alreadyLoggedToday) {
       alert("⚠️ วันนี้คุณบันทึกแล้ว ไม่สามารถบันทึกซ้ำได้");
       return;
     }
+    
+    setIsSubmitting(true);
 
     let imageUrl = null;
-
     if (file) {
       const { data, error } = await supabase.storage
         .from("uploads")
@@ -69,6 +101,7 @@ export default function TimeTrackingPage() {
 
       if (error) {
         alert("❌ อัปโหลดไฟล์ไม่สำเร็จ: " + error.message);
+        setIsSubmitting(false);
         return;
       }
 
@@ -86,10 +119,12 @@ export default function TimeTrackingPage() {
         description,
         created_by: userName,
         file_url: imageUrl,
-        status: "pending", // ✅ บันทึกสถานะเริ่มต้น
-        wage_amount: wage_amount, // ✅ บันทึกค่าแรง
+        status: "pending",
+        wage_amount,
       },
     ]);
+
+    setIsSubmitting(false);
 
     if (insertError) {
       alert("❌ บันทึกไม่สำเร็จ: " + insertError.message);
@@ -100,6 +135,9 @@ export default function TimeTrackingPage() {
       setFile(null);
       setFileName("");
     }
+    
+    await new Promise((r) => setTimeout(r, 2000)); // simulate
+    setIsLoading(false);
   }
 
   // ✅ ฟังก์ชันอนุมัติ / ไม่อนุมัติ
@@ -122,6 +160,7 @@ export default function TimeTrackingPage() {
 
   return (
     <div className="time-root">
+      
       <h2>⏱️ บันทึกงานวันนี้</h2>
       {role === "user" ? (
         <form className="time-form" onSubmit={handleSubmit}>
@@ -150,9 +189,13 @@ export default function TimeTrackingPage() {
           <button
             type="submit"
             className="btn-save"
-            disabled={alreadyLoggedToday}
+            disabled={alreadyLoggedToday || isSubmitting}
           >
-            {alreadyLoggedToday ? "✅ วันนี้บันทึกแล้ว" : "✅ บันทึกงาน"}
+            {alreadyLoggedToday
+              ? "✅ วันนี้บันทึกแล้ว"
+              : isSubmitting
+              ? "⏳ กำลังบันทึก..."
+              : "✅ บันทึกงาน"}
           </button>
         </form>
       ) : (

@@ -1,34 +1,54 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../supabase/supabaseClient";
-import AddCustomerModal from "./AddCustomerPage";
+import { useLocation } from "react-router-dom";
+import { useLoading } from "../../components/LoadingContext";
+import { nextRevisionNumber } from "../../utils/quotationNumber";
+import { hasContentChanged } from "../../utils/quotationDiff";
+import { useNavigate } from "react-router-dom";
+export default function CreateQuotationPage({
+  quotationData: quotationFromProps,
+  onClose,
+}) {
+  const { state } = useLocation();
+  // ถ้ามี state มาก็ใช้, ถ้าไม่มีให้ใช้จาก props
+  const original = state?.quotationData ?? quotationFromProps ?? null;
 
-export default function CreateQuotationPage() {
+  const { setIsLoading } = useLoading();
+  const navigate = useNavigate();
   const [customerName, setCustomerName] = useState("");
   const [customerId, setCustomerId] = useState(null);
   const [customers, setCustomers] = useState([]);
   const [filteredCustomers, setFilteredCustomers] = useState([]);
-
-  // ฟิลด์หลัก
+  const [isCustomerFocus, setIsCustomerFocus] = useState(false);
   const [quotationNo, setQuotationNo] = useState(makeQuotationNo());
   const [discountPercent, setDiscountPercent] = useState(0);
   const [vatPercent, setVatPercent] = useState(7);
 
-  // โครง items “หลัก” ตามที่ใช้อยู่
   const [items, setItems] = useState([
-    { name: "", qty: 1, unit: "ชิ้น", unit_price: 2 },
+    { name: "", qty: 1, unit: "ชิ้น", unit_price: 0 },
   ]);
   const [note, setNote] = useState("");
-  const [showCustomerModal, setShowCustomerModal] = useState(false);
   const userName = localStorage.getItem("username");
 
+  // โหลดรายชื่อลูกค้า
   useEffect(() => {
-    const loadCustomers = async () => {
-      const { data, error } = await supabase.from("customers").select("*");
+    (async () => {
+      const { data, error } = await supabase
+        .from("customers")
+        .select("*")
+        .order("name");
       if (!error) setCustomers(data || []);
-    };
-    loadCustomers();
+    })();
   }, []);
 
+  // พรีฟิลจากใบเสนอราคา (เมื่อ customers พร้อม และ original เปลี่ยน)
+  useEffect(() => {
+    if (!customers.length) return;
+    prefillFromQuotation(original);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customers, original?.id]); // ใช้ id เพื่อจับการเปลี่ยนใบ
+
+  // ฟิลเตอร์ตัวเลือกชื่อลูกค้า
   useEffect(() => {
     const norm = (v) => (v ?? "").toString().trim().toLowerCase();
     const q = norm(customerName);
@@ -36,8 +56,6 @@ export default function CreateQuotationPage() {
       setFilteredCustomers(customers.slice(0, 5));
       return;
     }
-
-    // ช่องที่จะใช้ค้นหา (เพิ่ม/ลดได้)
     const fields = [
       "name",
       "company_name",
@@ -45,33 +63,70 @@ export default function CreateQuotationPage() {
       "name_en",
       "company_name_en",
     ];
-
     const filtered = customers.filter((c) =>
       fields.some((f) => norm(c[f]).includes(q))
     );
-
     setFilteredCustomers(filtered.slice(0, 5));
   }, [customerName, customers]);
+
+  const prefillFromQuotation = (q) => {
+    if (!q) {
+      // โหมดสร้างใหม่
+      setQuotationNo(makeQuotationNo());
+      setNote("");
+      setDiscountPercent(0);
+      setVatPercent(7);
+      setItems([{ name: "", qty: 1, unit: "ชิ้น", unit_price: 0 }]);
+      setCustomerId(null);
+      // ไม่ reset customerName — เผื่อผู้ใช้พิมพ์เตรียมไว้
+      return;
+    }
+    // โหมดแก้ไข
+    setQuotationNo(q.number || makeQuotationNo());
+    setNote(q.note || "");
+
+    if (Array.isArray(q.items) && q.items.length) {
+      setItems(
+        q.items.map((it) => ({
+          name: it.name || "",
+          qty: Number(it.qty) || 1,
+          unit: it.unit || "ชิ้น",
+          unit_price: Number(it.unit_price ?? it.price ?? 0),
+        }))
+      );
+    } else {
+      setItems([{ name: "", qty: 1, unit: "ชิ้น", unit_price: 0 }]);
+    }
+
+    if (q.discount_percent != null) setDiscountPercent(q.discount_percent);
+    if (q.vat_percent != null) setVatPercent(q.vat_percent);
+
+    if (q.customers?.name) {
+      setCustomerName(q.customers.name);
+      const f1 = customers.find(
+        (c) => (c.name || "").trim() === (q.customers.name || "").trim()
+      );
+      if (f1) setCustomerId(f1.id);
+    } else if (q.customer_id) {
+      setCustomerId(q.customer_id);
+      const f2 = customers.find((c) => c.id === q.customer_id);
+      if (f2) setCustomerName(f2.name);
+    }
+  };
 
   const handleItemChange = (index, key, value) => {
     setItems((prev) => {
       const next = [...prev];
-      next[index] = { ...next[index], [key]: value }; // เก็บดิบๆ
+      next[index] = { ...next[index], [key]: value };
       return next;
     });
   };
-
-  const addItem = () => {
+  const addItem = () =>
     setItems([...items, { name: "", qty: 1, unit: "ชิ้น", unit_price: 0 }]);
-  };
+  const removeItem = (idx) => setItems(items.filter((_, i) => i !== idx));
 
-  const removeItem = (idx) => {
-    setItems(items.filter((_, i) => i !== idx));
-  };
-
-  // รวมต่อบรรทัด + รวมทั้งบิล (ใช้ “หลัก” นี้)
+  // คำนวณ
   const toNum = (v) => (v === "" || v == null ? 0 : parseFloat(v)) || 0;
-
   const lineTotal = (it) => toNum(it.qty) * toNum(it.unit_price);
   const subtotal = items.reduce((s, it) => s + lineTotal(it), 0);
   const discountAmount = subtotal * ((parseFloat(discountPercent) || 0) / 100);
@@ -81,73 +136,139 @@ export default function CreateQuotationPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!customerId) return alert("❗ กรุณาเลือกลูกค้าจากรายการที่แนะนำ");
-    if (!items.length) return alert("❗ กรุณาใส่รายการอย่างน้อย 1 รายการ");
+    setIsLoading(true);
 
-    // helper ในฟังก์ชัน (ไม่ต้องไปประกาศข้างนอก)
-    const toNum = (v) =>
-      (v === "" || v == null ? 0 : parseFloat(String(v))) || 0;
-    const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+    try {
+      const toNumLocal = (v) =>
+        (v === "" || v == null ? 0 : parseFloat(String(v))) || 0;
+      const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-    // ทำ items ให้เป็นตัวเลข + ใส่ total ต่อแถว
-    const normItems = items.map((it) => {
-      const qty = toNum(it.qty);
-      const unit_price = toNum(it.unit_price);
-      return {
-        name: (it.name || "").trim(),
-        unit: (it.unit || "ชิ้น").trim(),
-        qty,
-        unit_price,
-        total: round2(qty * unit_price),
+      const normItems = items.map((it) => {
+        const qty = toNumLocal(it.qty);
+        const unit_price = toNumLocal(it.unit_price);
+        return {
+          name: (it.name || "").trim(),
+          unit: (it.unit || "ชิ้น").trim(),
+          qty,
+          unit_price,
+          total: round2(qty * unit_price),
+        };
+      });
+
+      const subtotal2 = round2(normItems.reduce((s, x) => s + x.total, 0));
+      const discountPct = toNumLocal(discountPercent);
+      const vatPct = toNumLocal(vatPercent);
+      const discount_amount = round2(subtotal2 * (discountPct / 100));
+      const after_discount = round2(subtotal2 - discount_amount);
+      const vat_amount = round2(after_discount * (vatPct / 100));
+      const total = round2(after_discount + vat_amount);
+
+      if (subtotal2 <= 0) {
+        alert("❗ มูลค่ารวมต้องมากกว่า 0");
+        return;
+      }
+
+      // หา/สร้างลูกค้า
+      let finalCustomerId = customerId;
+      if (!finalCustomerId && customerName.trim()) {
+        const existed = customers.find(
+          (c) => (c.name || "").trim() === customerName.trim()
+        );
+        if (existed) {
+          finalCustomerId = existed.id;
+        } else {
+          const { data: created, error: cErr } = await supabase
+            .from("customers")
+            .insert([{ name: customerName.trim() }])
+            .select()
+            .single();
+          if (cErr) throw new Error(`สร้างลูกค้าไม่สำเร็จ: ${cErr.message}`);
+          finalCustomerId = created.id;
+        }
+      }
+      if (!finalCustomerId) {
+        alert("❗ กรุณาใส่ชื่อลูกค้าหรือเลือกจากรายการ");
+        return;
+      }
+
+      // payload ปัจจุบัน
+      const payload = {
+        number: quotationNo, // อาจถูกแก้เป็น -R ด้านล่าง
+        customer_id: finalCustomerId,
+        items: normItems,
+        note,
+        subtotal: subtotal2,
+        discount_percent: discountPct,
+        discount_amount,
+        after_discount,
+        vat_percent: vatPct,
+        vat_amount,
+        total,
+        created_at: new Date().toISOString(),
+        created_by: userName,
+        status: original?.status || "draft",
+        // updated_at: new Date().toISOString(), // ถ้า DB มีคอลัมน์นี้และอยากให้ client เซ็ตเอง
       };
-    });
 
-    // คำนวณรวมสำหรับบันทึก
-    const subtotal = round2(normItems.reduce((s, x) => s + x.total, 0));
-    const discountPct = toNum(discountPercent);
-    const vatPct = toNum(vatPercent);
-    const discount_amount = round2(subtotal * (discountPct / 100));
-    const after_discount = round2(subtotal - discount_amount);
-    const vat_amount = round2(after_discount * (vatPct / 100));
-    const total = round2(after_discount + vat_amount);
+      if (original?.id) {
+        // โหมดแก้ไข → ตรวจเฉพาะ items/discount/vat เพื่อเด้ง R
+        const changed = hasContentChanged(
+          {
+            items: original.items,
+            discount_percent: original.discount_percent,
+            vat_percent: original.vat_percent,
+          },
+          {
+            items: payload.items,
+            discount_percent: payload.discount_percent,
+            vat_percent: payload.vat_percent,
+          }
+        );
 
-    if (subtotal <= 0) return alert("❗ มูลค่ารวมต้องมากกว่า 0");
+        payload.number = changed
+          ? nextRevisionNumber(original.number || quotationNo)
+          : original.number || quotationNo;
 
-    const payload = {
-      number: quotationNo,
-      customer_id: customerId,
-      items: normItems,
-      note,
-      subtotal,
-      discount_percent: discountPct, // ✅ แก้ parseFloat(discountPercent)
-      discount_amount,
-      after_discount,
-      vat_percent: vatPct,
-      vat_amount,
-      total,
-      created_at: new Date().toISOString(),
-      created_by: userName,
-      status: "draft",
-    };
+        const { error } = await supabase
+          .from("quotations")
+          .update(payload)
+          .eq("id", original.id);
+        if (error) throw new Error(error.message);
+      } else {
+        // โหมดสร้างใหม่
+        const { error } = await supabase.from("quotations").insert([payload]);
+        if (error) throw new Error(error.message);
+      }
 
-    const { error } = await supabase.from("quotations").insert([payload]);
-    if (error) return alert("❌ บันทึกไม่สำเร็จ: " + error.message);
-    alert("✅ บันทึกใบเสนอราคาแล้ว!");
+      alert("✅ บันทึกใบเสนอราคาแล้ว!");
+      // ปิดโมดัลถ้าถูกฝังใน dialog
+      if (onClose) onClose();
 
-    // reset ฟอร์ม
-    setItems([{ name: "", qty: 1, unit: "ชิ้น", unit_price: 0 }]);
-    setNote("");
-    setDiscountPercent(0);
-    setVatPercent(7);
-    setQuotationNo(makeQuotationNo());
-    setCustomerName("");
-    setCustomerId(null);
+      // ถ้าอยาก reset ฟอร์มเมื่อสร้างใหม่:
+      if (!original?.id) {
+        setItems([{ name: "", qty: 1, unit: "ชิ้น", unit_price: 0 }]);
+        setNote("");
+        setDiscountPercent(0);
+        setVatPercent(7);
+        setQuotationNo(makeQuotationNo());
+        setCustomerId(null);
+        // setCustomerName(""); // ถ้าต้องการรีเซ็ตชื่อด้วย
+      }
+    } catch (err) {
+      alert("❌ บันทึกไม่สำเร็จ: " + err.message);
+    } finally {
+      navigate("/quot/list")
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="form-scroll">
       <div className="add-root">
-        <h2 className="add-header">📄 บันทึกใบเสนอราคา</h2>
+        <h2 className="add-header">
+          📄 {original?.id ? "แก้ไขใบเสนอราคา" : "บันทึกใบเสนอราคา"}
+        </h2>
+
         <form className="add-form" onSubmit={handleSubmit}>
           {/* เลขที่ใบเสนอราคา */}
           <label>
@@ -170,8 +291,16 @@ export default function CreateQuotationPage() {
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 style={{ flex: 1, padding: "0.4rem 0.6rem" }}
+                onFocus={() => setIsCustomerFocus(true)}
+                onBlur={() => setTimeout(() => setIsCustomerFocus(false), 120)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setIsCustomerFocus(false);
+                  }
+                }}
               />
-              {customerName && filteredCustomers.length > 0 && (
+              {isCustomerFocus && customerName && filteredCustomers.length >  0 && (
+                
                 <ul
                   style={{
                     position: "absolute",
@@ -191,10 +320,12 @@ export default function CreateQuotationPage() {
                   {filteredCustomers.map((c) => (
                     <li
                       key={c.id}
-                      onClick={() => {
+                     
+                      onMouseDown={() => {
                         setCustomerName(c.name);
                         setCustomerId(c.id);
                         setFilteredCustomers([]);
+                        setIsCustomerFocus(false);
                       }}
                       style={{
                         padding: "4px 8px",
@@ -216,13 +347,6 @@ export default function CreateQuotationPage() {
                   ))}
                 </ul>
               )}
-              <span
-                className="btn-save"
-                onClick={() => setShowCustomerModal(true)}
-                style={{ padding: "0.6rem 1rem" }}
-              >
-                ➕
-              </span>
             </div>
           </label>
 
@@ -243,76 +367,73 @@ export default function CreateQuotationPage() {
               <div>หน่วย</div>
               <div style={{ textAlign: "right" }}>ราคาต่อหน่วย</div>
               <div style={{ textAlign: "right" }}>ราคารวม</div>
-              <div></div>
+              <div />
             </div>
-            {items.map((it, idx) => (
-              <div
-                className="items-grid"
-                key={idx}
-                style={{ alignItems: "center" }}
-              >
-                <input
-                  type="text"
-                  value={it.name}
-                  onChange={(e) =>
-                    handleItemChange(idx, "name", e.target.value)
-                  }
-                />
-                {/* จำนวน */}
-                <input
-                  type="text" // จะพิมพ์ได้ลื่นกว่า number
-                  inputMode="numeric"
-                  value={it.qty}
-                  onChange={(e) =>
-                    handleItemChange(
-                      idx,
-                      "qty",
-                      e.target.value.replace(/[^\d.]/g, "")
-                    )
-                  }
-                  style={{ textAlign: "right" }}
-                />
-
-                {/* หน่วย */}
-                <input
-                  type="text"
-                  value={it.unit}
-                  onChange={(e) =>
-                    handleItemChange(idx, "unit", e.target.value)
-                  }
-                />
-
-                {/* ราคาต่อหน่วย */}
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={it.unit_price}
-                  onChange={(e) =>
-                    handleItemChange(
-                      idx,
-                      "unit_price",
-                      e.target.value.replace(/[^\d.]/g, "")
-                    )
-                  }
-                  style={{ textAlign: "right" }}
-                />
-
-                <input
-                  value={lineTotal(it).toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                  })}
-                  readOnly
-                  style={{ textAlign: "right", background: "#f7f7f7" }}
-                />
-                <button
-                  className="btn-delete"
-                  type="button"
-                  onClick={() => removeItem(idx)}
+            {items.map((it, idx) => {
+              const line = lineTotal(it);
+              return (
+                <div
+                  className="items-grid"
+                  key={idx}
+                  style={{ alignItems: "center" }}
                 >
-                  ✖
-                </button>
-              </div>
-            ))}
+                  <input
+                    type="text"
+                    value={it.name}
+                    onChange={(e) =>
+                      handleItemChange(idx, "name", e.target.value)
+                    }
+                  />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={it.qty}
+                    onChange={(e) =>
+                      handleItemChange(
+                        idx,
+                        "qty",
+                        e.target.value.replace(/[^\d.]/g, "")
+                      )
+                    }
+                    style={{ textAlign: "right" }}
+                  />
+                  <input
+                    type="text"
+                    value={it.unit}
+                    onChange={(e) =>
+                      handleItemChange(idx, "unit", e.target.value)
+                    }
+                  />
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={it.unit_price}
+                    onChange={(e) =>
+                      handleItemChange(
+                        idx,
+                        "unit_price",
+                        e.target.value.replace(/[^\d.]/g, "")
+                      )
+                    }
+                    style={{ textAlign: "right" }}
+                  />
+                  <input
+                    value={line.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
+                    readOnly
+                    style={{ textAlign: "right", background: "#f7f7f7" }}
+                  />
+                  <button
+                    className="btn-delete"
+                    type="button"
+                    onClick={() => removeItem(idx)}
+                  >
+                    ✖
+                  </button>
+                </div>
+              );
+            })}
             <button
               type="button"
               onClick={addItem}
@@ -322,12 +443,13 @@ export default function CreateQuotationPage() {
               ➕ เพิ่มรายการ
             </button>
           </label>
+
           {/* ส่วนลด & VAT */}
           <div
             className="discount-vat-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", // 2 คอลัมน์
+              gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
               gap: 12,
               marginTop: 6,
               fontWeight: 600,
@@ -366,18 +488,7 @@ export default function CreateQuotationPage() {
             </label>
           </div>
 
-          {/* หมายเหตุ */}
-          <label>
-            หมายเหตุ
-            <textarea
-              placeholder="เพิ่มเติม เช่น เงื่อนไข"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              rows={3}
-            />
-          </label>
-
-          {/* แสดงผลรวม */}
+          {/* สรุป */}
           <div
             style={{
               marginTop: 12,
@@ -407,7 +518,7 @@ export default function CreateQuotationPage() {
               บาท
             </div>
             <div>
-              ภาษีมูลค่าเพิ่ม ({vatPercent || 0}%):{" "}
+              ภาษีมูลค่าเพิ่ม ({vatPercent || 0}%):
               {vatAmount.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
               })}{" "}
@@ -423,32 +534,26 @@ export default function CreateQuotationPage() {
               บาท
             </div>
           </div>
-          
-            <button
-              type="submit"
-              className="btn-save"
-              style={{ marginTop: 12 }}
-            >
-              ✅ บันทึกข้อมูล
-            </button>
-          
-        </form>
 
-        {showCustomerModal && (
-          <AddCustomerModal
-            onClose={() => setShowCustomerModal(false)}
-            onSave={(newName) => {
-              setCustomerName(newName);
-              setShowCustomerModal(false);
-            }}
-          />
-        )}
+          <label style={{ marginTop: 12 }}>
+            หมายเหตุ
+            <textarea
+              placeholder="เพิ่มเติม เช่น เงื่อนไข"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={3}
+            />
+          </label>
+
+          <button type="submit" className="btn-save" style={{ marginTop: 12 }}>
+            ✅ บันทึกข้อมูล
+          </button>
+        </form>
       </div>
     </div>
   );
 }
 
-/** สร้างเลขที่ใบเสนอราคาอย่างง่าย: QU-YYYYMMDD-HHmmss */
 function makeQuotationNo() {
   const d = new Date();
   const pad = (n) => String(n).padStart(2, "0");

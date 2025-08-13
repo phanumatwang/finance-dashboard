@@ -105,6 +105,17 @@
 .btn-delete:hover {
   background: #c9302c;
 }
+/* Fade-in effect */
+.time-card {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.6s ease-out;
+}
+
+.time-card.visible {
+  opacity: 1;
+  transform: scale(1);
+}
 
 /* ✅ Popup Overlay */
 .popup-overlay {

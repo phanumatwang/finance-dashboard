@@ -84,6 +84,18 @@
   border-left: 4px solid var(--color-primary, #4caf50);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   line-height: 1.4;
+   opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.6s ease-out;
+}
+.time-card.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+/* เพิ่มใน TimeTrackingPage.css */
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* ✅ กล่องปุ่มใน Card */
@@ -125,4 +137,8 @@
   .card-actions button {
     width: 100%;
   }
+}
+.time-card.visible {
+  opacity: 1;
+  transform: scale(1);
 }
