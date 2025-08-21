@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { supabase } from "../../supabase/supabaseClient";
 import "./CustomerListPage.css";
 import AddCustomerPage from "./AddCustomerPage";
+
 export default function CustomerListPage() {
   const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+
   useEffect(() => {
     loadCustomers();
   }, []);
@@ -23,6 +25,10 @@ export default function CustomerListPage() {
     else setCustomers(data || []);
 
     setLoading(false);
+  };
+
+  const refresh = async () => {
+    await loadCustomers();
   };
 
   const handleDelete = async (id) => {
@@ -50,14 +56,32 @@ export default function CustomerListPage() {
           <h1>📋 รายชื่อลูกค้า</h1>
           <button
             className="btn btn-primary"
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              setEditingId(null); // โหมดเพิ่ม
+              setShowModal(true);
+            }}
           >
             ➕ เพิ่มลูกค้า
           </button>
         </div>
+
+        {/* ✅ Modal: ใช้ได้ทั้งเพิ่มและแก้ไข */}
         {showModal && (
-          <AddCustomerPage isModal={true} onClose={() => setShowModal(false)} />
+          <AddCustomerPage
+            isModal
+            customerId={editingId} // null = เพิ่ม / id = แก้ไข
+            onClose={() => {
+              setShowModal(false);
+              setEditingId(null);
+            }}
+            onSave={() => {
+              setShowModal(false);
+              setEditingId(null);
+              refresh();
+            }}
+          />
         )}
+
         {/* Search */}
         <div className="search-wrap">
           <span className="search-icon">🔍</span>
@@ -86,7 +110,16 @@ export default function CustomerListPage() {
         ) : (
           <ul className="card-list">
             {filtered.map((c) => (
-              <li key={c.id} className="customer-card">
+              <li
+                key={c.id}
+                className="customer-card"
+                onClick={() => {
+                  setEditingId(c.id); // ✅ กดการ์ด = แก้ไข
+                  setShowModal(true);
+                }}
+                role="button"
+                tabIndex={0}
+              >
                 <span className="accent" />
                 <div className="card-top">
                   <div className="title">{c.name || "-"}</div>
@@ -113,21 +146,12 @@ export default function CustomerListPage() {
                 <div className="divider" />
 
                 <div className="actions">
-                  {/* เพิ่มปุ่มอื่นภายหลังได้ เช่น ดู/แก้ไข */}
+                  {/* ปุ่มลบ ต้อง stopPropagation() กันไม่ให้เปิด modal */}
                   <button
-                    onClick={() => handleDelete(c.id)}
-                    className="btn btn-primary"
-                  >
-                    🗑 ดูข้อมูล
-                  </button>
-                  <button
-                    onClick={() => handleDelete(c.id)}
-                    className="btn btn-danger"
-                  >
-                    🗑 แก้ไข
-                  </button>
-                  <button
-                    onClick={() => handleDelete(c.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(c.id);
+                    }}
                     className="btn btn-delete"
                   >
                     🗑 ลบ
