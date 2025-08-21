@@ -38,13 +38,13 @@ export function generateQuotationPDF(quotation, customer, logoUrl) {
 
       // Header ย่อ
       doc.setFont("THSarabun", "bold");
-      doc.setFontSize(12);
-      doc.text("ใบเสนอราคา / Quotation", pageMargin.left, 10);
-      doc.setFont("THSarabun", "normal");
+      // doc.setFontSize(12);
+      // doc.text("ใบเสนอราคา / Quotation", pageMargin.left, 10);
+      // doc.setFont("THSarabun", "normal");
 
       // เส้นคั่นบน
-      doc.setLineWidth(0.2);
-      doc.line(pageMargin.left, 12, pageWidth - pageMargin.right, 12);
+      // doc.setLineWidth(0.2);
+      // doc.line(pageMargin.left, 12, pageWidth - pageMargin.right, 12);
 
       // Footer: เลขหน้า
       const currentPage = doc.internal.getNumberOfPages();
