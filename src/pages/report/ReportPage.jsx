@@ -98,93 +98,97 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="report-root">
-      <h2>📊 รายงาน</h2>
+    <div className="form-scroll">
+      <div className="report-root">
+        <h2>📊 รายงาน</h2>
 
-      {transactions.length === 0 ? (
-        <p>ไม่มีข้อมูล</p>
-      ) : (
-        <ul className="report-list">
-          {transactions.map((item) => (
-            <li
-              key={item.id}
-              className={`report-card time-card ${
-                item.category === "รายรับ" ? "income" : "expense"
-              }`}
-            >
-              {/* ✅ ส่วนหัวการ์ด */}
-              <div className="card-header">
-                <p>
-                  📅 <b>{item.date}</b>
-                </p>
-                {(role === "admin" || role === "superadmin") &&
-                  item.status === "pending" && (
-                    <button
-                      className="btn-approve"
-                      onClick={() => approveRequest(item.id)}
-                    >
-                      ✅ อนุมัติ
-                    </button>
-                  )}
-              </div>
-
-              <p>📂 {item.category}</p>
-              <p>📝 {item.description}</p>
-              <p
-                className={
-                  item.category === "รายรับ"
-                    ? "amount-income"
-                    : "amount-expense"
-                }
+        {transactions.length === 0 ? (
+          <p>ไม่มีข้อมูล</p>
+        ) : (
+          <ul className="report-list">
+            {transactions.map((item) => (
+              <li
+                key={item.id}
+                className={`report-card time-card ${
+                  item.category === "รายรับ" ? "income" : "expense"
+                }`}
               >
-                💵 {item.amount.toLocaleString()} บาท
-              </p>
-
-              <p>
-                ✅ สถานะ:{" "}
-                {item.status === "approved" ? "✔️ อนุมัติแล้ว" : "⏳ รออนุมัติ"}
-              </p>
-
-              {/* ✅ ปุ่ม View รูปภาพ อยู่ด้านบน (ถ้ามีไฟล์) */}
-              {item.file_url && (
-                <button
-                  className="btn-view"
-                  onClick={() => setSelectedImage(item.file_url)}
-                >
-                  👁️ View รูปภาพ
-                </button>
-              )}
-
-              {/* ✅ ปุ่มลบ ลอยล่างขวา เฉพาะ superadmin */}
-              {role === "superadmin" && (
-                <div className="card-delete-footer">
-                  <button
-                    className="btn-delete"
-                    onClick={() => handleDelete(item.id, item.file_url)}
-                  >
-                    🗑️ ลบ
-                  </button>
+                {/* ✅ ส่วนหัวการ์ด */}
+                <div className="card-header">
+                  <p>
+                    📅 <b>{item.date}</b>
+                  </p>
+                  {(role === "admin" || role === "superadmin") &&
+                    item.status === "pending" && (
+                      <button
+                        className="btn-approve"
+                        onClick={() => approveRequest(item.id)}
+                      >
+                        ✅ อนุมัติ
+                      </button>
+                    )}
                 </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
 
-      {/* ✅ Popup รูปภาพ */}
-      {selectedImage && (
-        <div className="popup-overlay" onClick={() => setSelectedImage(null)}>
-          <div className="popup-content">
-            <img src={selectedImage} alt="แนบไฟล์" />
-            <button
-              className="btn-close"
-              onClick={() => setSelectedImage(null)}
-            >
-              ❌ ปิด
-            </button>
+                <p>📂 {item.category}</p>
+                <p>📝 {item.description}</p>
+                <p
+                  className={
+                    item.category === "รายรับ"
+                      ? "amount-income"
+                      : "amount-expense"
+                  }
+                >
+                  💵 {item.amount.toLocaleString()} บาท
+                </p>
+
+                <p>
+                  ✅ สถานะ:{" "}
+                  {item.status === "approved"
+                    ? "✔️ อนุมัติแล้ว"
+                    : "⏳ รออนุมัติ"}
+                </p>
+
+                {/* ✅ ปุ่ม View รูปภาพ อยู่ด้านบน (ถ้ามีไฟล์) */}
+                {item.file_url && (
+                  <button
+                    className="btn-view"
+                    onClick={() => setSelectedImage(item.file_url)}
+                  >
+                    👁️ View รูปภาพ
+                  </button>
+                )}
+
+                {/* ✅ ปุ่มลบ ลอยล่างขวา เฉพาะ superadmin */}
+                {role === "superadmin" && (
+                  <div className="card-delete-footer">
+                    <button
+                      className="btn-delete"
+                      onClick={() => handleDelete(item.id, item.file_url)}
+                    >
+                      🗑️ ลบ
+                    </button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* ✅ Popup รูปภาพ */}
+        {selectedImage && (
+          <div className="popup-overlay" onClick={() => setSelectedImage(null)}>
+            <div className="popup-content">
+              <img src={selectedImage} alt="แนบไฟล์" />
+              <button
+                className="btn-close"
+                onClick={() => setSelectedImage(null)}
+              >
+                ❌ ปิด
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

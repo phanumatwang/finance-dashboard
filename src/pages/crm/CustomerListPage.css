@@ -1,0 +1,138 @@
+/* ===== CustomerListPage.css ===== */
+
+/* ใช้ตัวแปรสีจาก :root ของโปรเจกต์ */
+:root{
+  --gap: 12px;
+  --radius-card: 14px;
+}
+
+/* โครงหน้า */
+.customer-page{
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px 16px 96px; /* กันชนเผื่อ navbar ล่าง */
+  color: var(--color-text);
+}
+
+/* Header */
+.customer-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.customer-header h1{
+  margin:0;
+  font-size: 24px;
+  color: var(--color-primary);
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  font-weight: 800;
+}
+
+/* ปุ่มพื้นฐาน */
+.btn{
+  padding:8px 12px;
+  border-radius: 10px;
+  border:1px solid var(--color-border);
+  background:#fff;
+  color: var(--color-text);
+  cursor:pointer;
+  font-size:14px;
+  text-decoration:none;
+  display:inline-flex; align-items:center; gap:6px;
+  transition: background .15s ease, filter .15s ease, transform .05s ease;
+}
+.btn:active{ transform: translateY(1px); }
+.btn-primary{
+  background: var(--color-primary);
+  color:#fff;
+  border-color: color-mix(in srgb, var(--color-primary) 70%, #0000);
+}
+.btn-primary:hover{ filter: brightness(0.95); }
+.btn-outline:hover{ background:#f7f7f7; }
+.btn-danger{
+  background: var(--color-danger);
+  color:#fff;
+  border-color: color-mix(in srgb, var(--color-danger) 70%, #0000);
+}
+.btn-danger:hover{ filter: brightness(0.95); }
+
+/* ช่องค้นหา */
+.search-wrap{ position:relative; margin-bottom:12px; }
+.search-icon{
+  position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:.6;
+}
+.search-input{
+  width:100%;
+  padding:10px 12px 10px 32px;
+  border:1px solid var(--color-border);
+  border-radius:10px;
+  outline:none;
+  background:#fff;
+}
+.search-input:focus{
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+
+/* รายการการ์ด */
+.card-list{ list-style:none; padding:0; margin:0; display:grid; gap: var(--gap); }
+
+.customer-card{
+  position:relative;
+  background: var(--color-secondary);
+  border:1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.05);
+  transition: box-shadow .2s ease, transform .05s ease;
+}
+.customer-card:hover{ box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+.customer-card:active{ transform: scale(.998); }
+
+/* แถบ accent ซ้าย */
+.customer-card .accent{
+  position:absolute; left:0; top:0; bottom:0; width:6px;
+  background: var(--color-primary);
+  border-radius: var(--radius-card) 0 0 var(--radius-card);
+}
+
+/* ส่วนหัวการ์ด */
+.card-top{
+  display:flex; align-items:flex-start; justify-content:space-between; gap: 8px;
+}
+.title{
+  font-size:18px; font-weight:800; color: var(--color-primary);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width: 75%;
+}
+.badge{
+  font-size:12px; color:#555; background:#e6e7ea; padding:3px 8px; border-radius: 999px;
+}
+
+/* เนื้อหาข้อมูล */
+.info-grid{
+  margin-top:6px;
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 6px 18px;
+  font-size: 14px;
+}
+@media (max-width: 640px){
+  .info-grid{ grid-template-columns: 1fr; }
+}
+.strong{ font-weight:600; }
+
+/* เส้นคั่น */
+.divider{ height:1px; background: var(--color-border); margin: 10px 0; }
+
+/* กล่องว่าง/โหลด */
+.empty{ text-align:center; padding: 24px 0; color:#79807a; }
+
+/* สเกเลตันโหลด */
+@keyframes pulse{ 0%{opacity:.6} 50%{opacity:1} 100%{opacity:.6} }
+.skeleton{ animation: pulse 1.2s ease-in-out infinite; }
+
+/* กลุ่มปุ่มท้ายการ์ด */
+.actions{ display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; }

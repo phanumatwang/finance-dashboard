@@ -5,6 +5,8 @@ import { useLoading } from "../../components/LoadingContext";
 import { nextRevisionNumber } from "../../utils/quotationNumber";
 import { hasContentChanged } from "../../utils/quotationDiff";
 import { useNavigate } from "react-router-dom";
+
+
 export default function CreateQuotationPage({
   quotationData: quotationFromProps,
   onClose,
@@ -12,6 +14,7 @@ export default function CreateQuotationPage({
   const { state } = useLocation();
   // ถ้ามี state มาก็ใช้, ถ้าไม่มีให้ใช้จาก props
   const original = state?.quotationData ?? quotationFromProps ?? null;
+  
 
   const { setIsLoading } = useLoading();
   const navigate = useNavigate();
@@ -257,7 +260,7 @@ export default function CreateQuotationPage({
     } catch (err) {
       alert("❌ บันทึกไม่สำเร็จ: " + err.message);
     } finally {
-      navigate("/quot/list")
+      navigate("/quot/list");
       setIsLoading(false);
     }
   };
@@ -299,54 +302,55 @@ export default function CreateQuotationPage({
                   }
                 }}
               />
-              {isCustomerFocus && customerName && filteredCustomers.length >  0 && (
-                
-                <ul
-                  style={{
-                    position: "absolute",
-                    top: "100%",
-                    left: 0,
-                    right: 0,
-                    background: "#fff",
-                    border: "1px solid #ddd",
-                    zIndex: 10,
-                    maxHeight: "150px",
-                    overflowY: "auto",
-                    listStyle: "none",
-                    padding: "0.5rem",
-                    margin: 0,
-                  }}
-                >
-                  {filteredCustomers.map((c) => (
-                    <li
-                      key={c.id}
-                     
-                      onMouseDown={() => {
-                        setCustomerName(c.name);
-                        setCustomerId(c.id);
-                        setFilteredCustomers([]);
-                        setIsCustomerFocus(false);
-                      }}
-                      style={{
-                        padding: "4px 8px",
-                        cursor: "pointer",
-                        borderBottom: "1px solid #eee",
-                      }}
-                    >
-                      <strong>{c.name}</strong>
-                      {c.company_name && (
-                        <>
-                          <br />
-                          <span style={{ fontSize: "0.8em", color: "#888" }}>
-                            {c.company_name} (
-                            {c.contact_name || "ไม่ระบุผู้ติดต่อ"})
-                          </span>
-                        </>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
+              
+              {isCustomerFocus &&
+                customerName &&
+                filteredCustomers.length > 0 && (
+                  <ul
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 0,
+                      right: 0,
+                      background: "#fff",
+                      border: "1px solid #ddd",
+                      zIndex: 10,
+                      maxHeight: "150px",
+                      overflowY: "auto",
+                      listStyle: "none",
+                      padding: "0.5rem",
+                      margin: 0,
+                    }}
+                  >
+                    {filteredCustomers.map((c) => (
+                      <li
+                        key={c.id}
+                        onMouseDown={() => {
+                          setCustomerName(c.name);
+                          setCustomerId(c.id);
+                          setFilteredCustomers([]);
+                          setIsCustomerFocus(false);
+                        }}
+                        style={{
+                          padding: "4px 8px",
+                          cursor: "pointer",
+                          borderBottom: "1px solid #eee",
+                        }}
+                      >
+                        <strong>{c.name}</strong>
+                        {c.company_name && (
+                          <>
+                            <br />
+                            <span style={{ fontSize: "0.8em", color: "#888" }}>
+                              {c.company_name} (
+                              {c.contact_name || "ไม่ระบุผู้ติดต่อ"})
+                            </span>
+                          </>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
             </div>
           </label>
 
@@ -550,6 +554,7 @@ export default function CreateQuotationPage({
           </button>
         </form>
       </div>
+      
     </div>
   );
 }

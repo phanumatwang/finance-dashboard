@@ -10,7 +10,7 @@ import TimeTrackingPage from "./pages/checkin/TimeTrackingPage";
 import PayrollPage from "./pages/payroll/PayrollPage";
 import OTApprovePage from "./pages/ot/OTApprovePage";
 import OTRequestPage from "./pages/ot/OTRequestPage";
-
+import CustomerListPage from "./pages/crm/CustomerListPage";
 import AddCustomerPage from "./pages/crm/AddCustomerPage";
 import ListQuotationPage from "./pages/crm/QuotationLiatPage";
 import CreateQuotationPage from "./pages/crm/CreateQuotationPage";
@@ -109,8 +109,8 @@ export default function App() {
             <Route path="/time-tracking-report" element={<PayrollPage />} />
             <Route path="/quot/list" element={<ListQuotationPage />} />
             <Route path="/quot/add" element={<CreateQuotationPage />} />  
-            <Route path="/crm/add" element={<AddCustomerPage />} />
-           
+            <Route path="add-customer" element={<AddCustomerPage />} />
+            <Route path="/customers" element={<CustomerListPage />} />
             
             {/* ใส่เอกสาร/อื่นๆ ได้ที่นี่ */}
           </>

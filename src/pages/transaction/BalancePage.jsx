@@ -35,23 +35,27 @@ export default function BalancePage() {
   }
 
   return (
-    <div className="balance-root">
-      <h2>📊 งบดุล</h2>
+    <div className="form-scroll">
+      <div className="balance-root">
+        <h2>📊 งบดุล</h2>
 
-      <div className="balance-card-container">
-        <div className="balance-card income">
-          <p>💰 รายรับรวม</p>
-          <h3>{income.toLocaleString()} บาท</h3>
-        </div>
+        <div className="balance-card-container">
+          <div className="balance-card income">
+            <p>💰 รายรับรวม</p>
+            <h3>{income.toLocaleString()} บาท</h3>
+          </div>
 
-        <div className="balance-card expense">
-          <p>💸 รายจ่ายรวม</p>
-          <h3>{expense.toLocaleString()} บาท</h3>
-        </div>
+          <div className="balance-card expense">
+            <p>💸 รายจ่ายรวม</p>
+            <h3>{expense.toLocaleString()} บาท</h3>
+          </div>
 
-        <div className={`balance-card ${balance >= 0 ? "positive" : "negative"}`}>
-          <p>🏦 ยอดคงเหลือ</p>
-          <h3>{balance.toLocaleString()} บาท</h3>
+          <div
+            className={`balance-card ${balance >= 0 ? "positive" : "negative"}`}
+          >
+            <p>🏦 ยอดคงเหลือ</p>
+            <h3>{balance.toLocaleString()} บาท</h3>
+          </div>
         </div>
       </div>
     </div>

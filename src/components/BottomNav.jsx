@@ -52,6 +52,14 @@ export default function BottomNav({ role }) {
       {openMenu === "docs" && (role === "superadmin" || role === "admin") && (
         <div className="submenu">
           <span className="submenu-title">เอกสาร</span>
+           
+          <NavLink
+            to="customers"
+            className="submenu-item"
+            onClick={() => setOpenMenu(null)}
+          >
+            📋 รายชื่อลูกค้า
+          </NavLink>
           <NavLink
             to="/quot/list"
             className="submenu-item"
