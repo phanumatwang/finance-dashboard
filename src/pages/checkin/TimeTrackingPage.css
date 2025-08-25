@@ -106,7 +106,12 @@
 }
 
 .card-actions button {
-  flex: 1; /* ✅ ทำให้ปุ่มกว้างเท่ากัน */
+  
+
+
+  width: 100%;     /* ให้ปุ่มเต็มบรรทัด */
+  display: block;  /* ทำให้กว้างเท่ากับ container */
+
   padding: 0.6rem;
   border: none;
   border-radius: 8px;

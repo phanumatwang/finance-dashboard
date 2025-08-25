@@ -140,7 +140,7 @@ export default function TimeTrackingPage() {
   //   await new Promise((r) => setTimeout(r, 2000)); // simulate
   //   setIsLoading(false);
   // }
-  
+
   async function handleSubmit(e) {
     e.preventDefault();
     setIsLoading(true);
