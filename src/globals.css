@@ -130,7 +130,11 @@
 .animate-spin {
   animation: spin 1s linear infinite;
 }
-
+* {
+  font-family: "Sriracha", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
 /* แถบปุ่มบันทึกให้ลอยอยู่เหนือ navbar */
 /* .save-bar {
   position: sticky;

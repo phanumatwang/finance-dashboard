@@ -59,48 +59,36 @@
   font-weight: bold;
 }
 
+
 .chart-box {
-  margin-top: 1rem;
-  background: var(--color-secondary);
-  padding: 1rem;
-  border-radius: 8px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 16px;
+  padding: 14px;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.04) 0px,
+      rgba(0,0,0,0.04) 1px,
+      transparent 1px,
+      transparent 28px
+    ),
+    #fff;
 }
 
-.chart-grid {
-  display: flex;
-  justify-content: space-around;
-  align-items: flex-end;
-  gap: 0.5rem;
+/* Tooltip สวยอ่านง่าย */
+.chart-tooltip {
+  max-width: 360px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #0f172a;
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  font-size: 12.5px;
+  line-height: 1.35;
 }
-
-.chart-item {
-  text-align: center;
-}
-
-.chart-bar {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  height: 120px;
-  width: 20px;
-  margin: 0 auto;
-  gap: 2px;
-}
-
-.bar-income {
-  width: 100%;
-  background: var(--color-success);
-  border-radius: 3px;
-}
-
-.bar-expense {
-  width: 100%;
-  background: var(--color-danger);
-  border-radius: 3px;
-}
-
-.chart-item span {
-  font-size: 0.8rem;
-  margin-top: 0.3rem;
-}
+.chart-tooltip .tt-head { font-weight: 700; margin-bottom: 6px; opacity: .95; }
+.chart-tooltip .tt-row { margin: 2px 0; }
+.chart-tooltip .tt-section { margin-top: 8px; }
+.chart-tooltip .tt-title { font-weight: 600; opacity: .9; margin-bottom: 4px; }
+.chart-tooltip .tt-list { margin: 0; padding-left: 16px; }
+.chart-tooltip .tt-list li { margin: 2px 0; }
